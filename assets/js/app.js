@@ -83,12 +83,17 @@ function renderCalendar(monthString) {
     const row = document.createElement('div');
     row.className = 'calendar-day';
 
+    const dayName = document.createElement('div');
+    dayName.className = 'day-name';
+    dayName.textContent = weekdayNames[cellDate.getDay()];
+
     const dateLabel = document.createElement('div');
     dateLabel.className = 'day-number';
-    dateLabel.textContent = `${weekdayNames[cellDate.getDay()]} ${day}`;
+    dateLabel.textContent = String(day);
 
     const buttons = createStatusButtons(dateString, monthEntries[dateString] || '');
 
+    row.appendChild(dayName);
     row.appendChild(dateLabel);
     row.appendChild(buttons);
     calendarGrid.appendChild(row);
