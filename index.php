@@ -88,6 +88,6 @@ $initialMonth = date('Y-m');
     </div>
   </div>
 
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/app.js?v=<?= urlencode((string) filemtime(__DIR__ . '/assets/js/app.js')); ?>"></script>
 </body>
 </html>
