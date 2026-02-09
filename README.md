@@ -9,7 +9,8 @@ Simple PHP + JavaScript app for planning work days by month.
   - Full day
   - Half day
   - Day off
-- Data persists in `data/schedule.json` (created automatically when needed).
+- Day notes with a small Show/Hide toggle per date.
+- Data persists in `data/schedule.json` (created automatically when needed), including notes.
 
 ## Run locally
 ```bash

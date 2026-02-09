@@ -18,7 +18,7 @@ $initialMonth = date('Y-m');
       padding: .75rem 1rem;
       background-color: #fff;
       display: grid;
-      grid-template-columns: 52px 1fr auto auto;
+      grid-template-columns: 52px 1fr auto auto minmax(150px, 240px);
       align-items: center;
       gap: .75rem;
     }
@@ -78,6 +78,26 @@ $initialMonth = date('Y-m');
     }
     .andreas-heart {
       color: #dc3545;
+    }
+    .notes-control {
+      min-width: 150px;
+    }
+    .notes-toggle {
+      width: 100%;
+    }
+    .notes-input {
+      resize: vertical;
+      min-height: 70px;
+    }
+    @media (max-width: 992px) {
+      .calendar-day {
+        grid-template-columns: 52px 1fr;
+      }
+      .status-options,
+      .form-check,
+      .notes-control {
+        grid-column: 1 / -1;
+      }
     }
   </style>
 </head>

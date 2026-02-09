@@ -76,11 +76,26 @@ function normalizeAndreas($value)
     return null;
 }
 
+function normalizeNotes($value)
+{
+    if (!is_string($value)) {
+        return null;
+    }
+
+    $clean = trim($value);
+    if (mb_strlen($clean) > 2000) {
+        $clean = mb_substr($clean, 0, 2000);
+    }
+
+    return $clean;
+}
+
 function normalizeEntry($entry)
 {
     $result = [
         'status' => '',
         'andreas' => false,
+        'notes' => '',
     ];
 
     if (is_string($entry)) {
@@ -106,6 +121,13 @@ function normalizeEntry($entry)
         $andreas = normalizeAndreas($entry['andreas']);
         if ($andreas !== null) {
             $result['andreas'] = $andreas;
+        }
+    }
+
+    if (array_key_exists('notes', $entry)) {
+        $notes = normalizeNotes($entry['notes']);
+        if ($notes !== null) {
+            $result['notes'] = $notes;
         }
     }
 
@@ -135,7 +157,7 @@ function loadData($file)
         }
 
         $normalizedEntry = normalizeEntry($entry);
-        if ($normalizedEntry['status'] !== '' || $normalizedEntry['andreas']) {
+        if ($normalizedEntry['status'] !== '' || $normalizedEntry['andreas'] || $normalizedEntry['notes'] !== '') {
             $clean[$date] = $normalizedEntry;
         }
     }
@@ -176,13 +198,15 @@ if ($method === 'POST') {
     $date = isset($payload['date']) ? $payload['date'] : '';
     $statusProvided = array_key_exists('status', $payload);
     $andreasProvided = array_key_exists('andreas', $payload);
+    $notesProvided = array_key_exists('notes', $payload);
 
-    if (!$statusProvided && !$andreasProvided) {
+    if (!$statusProvided && !$andreasProvided && !$notesProvided) {
         respond(400, ['error' => 'No fields provided to update.']);
     }
 
     $status = $statusProvided ? normalizeStatus($payload['status']) : null;
     $andreas = $andreasProvided ? normalizeAndreas($payload['andreas']) : null;
+    $notes = $notesProvided ? normalizeNotes($payload['notes']) : null;
 
     if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
         respond(400, ['error' => 'Invalid date format. Use YYYY-MM-DD.']);
@@ -193,13 +217,16 @@ if ($method === 'POST') {
     if ($andreasProvided && $andreas === null) {
         respond(400, ['error' => 'Invalid Andreas value.']);
     }
+    if ($notesProvided && $notes === null) {
+        respond(400, ['error' => 'Invalid notes value.']);
+    }
 
     $data = loadData($dataFile);
     if ($data === null) {
         respond(500, ['error' => 'Failed to initialize data file.']);
     }
 
-    $existing = isset($data[$date]) ? normalizeEntry($data[$date]) : ['status' => '', 'andreas' => false];
+    $existing = isset($data[$date]) ? normalizeEntry($data[$date]) : ['status' => '', 'andreas' => false, 'notes' => ''];
 
     if ($statusProvided) {
         $existing['status'] = $status;
@@ -207,8 +234,11 @@ if ($method === 'POST') {
     if ($andreasProvided) {
         $existing['andreas'] = $andreas;
     }
+    if ($notesProvided) {
+        $existing['notes'] = $notes;
+    }
 
-    if ($existing['status'] === '' && !$existing['andreas']) {
+    if ($existing['status'] === '' && !$existing['andreas'] && $existing['notes'] === '') {
         unset($data[$date]);
     } else {
         $data[$date] = $existing;
