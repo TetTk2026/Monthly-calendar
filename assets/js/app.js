@@ -75,10 +75,6 @@ function getMonthPoeticHint(monthCounts) {
     return 'This month is still a blank page.';
   }
 
-  if (monthCounts.hearts >= 8 && monthCounts.weekendDays >= 8) {
-    return 'Cupid filed your month under: premium romance package.';
-  }
-
   if (monthCounts.hearts >= 6 && monthCounts.weekendDays >= 8) {
     return 'Long weekend with your sweetheart? This is basically a rom-com calendar.';
   }
@@ -109,7 +105,7 @@ function updateMonthOverview(monthCounts) {
     { label: 'half days', value: monthCounts.half },
     { label: 'days off', value: monthCounts.off },
     { label: 'sweetheart days ♥', value: monthCounts.hearts },
-    { label: 'weekend days', value: monthCounts.weekendDays }
+    { label: 'long weekends', value: monthCounts.longWeekends }
   ];
 
   items.forEach((item) => {
@@ -184,16 +180,18 @@ function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
     day: 'numeric'
   })}`;
 
+  const hidePastEmptyCounts = isPast && !hasEntries;
+
   const weekSummaryInline = document.createElement('div');
   weekSummaryInline.className = 'week-summary-inline';
-  weekSummaryInline.textContent = summaryText;
+  weekSummaryInline.textContent = hidePastEmptyCounts ? '' : summaryText;
 
   const weekSummary = document.createElement('div');
   weekSummary.className = 'week-summary';
   weekSummary.classList.toggle('is-empty', !hasEntries);
 
   const weekSummaryText = document.createElement('div');
-  weekSummaryText.textContent = summaryText;
+  weekSummaryText.textContent = hidePastEmptyCounts ? '' : summaryText;
 
   const weekSummaryPoem = document.createElement('div');
   weekSummaryPoem.className = 'week-summary-poem';
@@ -375,16 +373,17 @@ function updateStatusHero(hero, status) {
   const iconByStatus = {
     full: '●',
     half: '◐',
-    off: '○'
+    off: '○',
+    empty: '·'
   };
   const label = hero.querySelector('.status-hero-label');
   label.innerHTML = '';
   const shape = document.createElement('span');
   shape.className = 'status-shape';
-  shape.textContent = iconByStatus[status] || '◌';
+  shape.textContent = iconByStatus[status] || iconByStatus.empty;
 
   const text = document.createElement('span');
-  text.textContent = statusLabelByValue[status] || 'Set day status';
+  text.textContent = statusLabelByValue[status] || '';
   label.appendChild(shape);
   label.appendChild(text);
 }
@@ -542,7 +541,8 @@ function renderCalendar(monthString) {
 
   const weeks = new Map();
   const weekStats = new Map();
-  const monthCounts = { full: 0, half: 0, off: 0, hearts: 0, weekendDays: 0 };
+  const monthCounts = { full: 0, half: 0, off: 0, hearts: 0, weekendDays: 0, longWeekends: 0 };
+  const weekendDaysByWeek = new Map();
 
   for (let day = 1; day <= daysInMonth; day += 1) {
     const cellDate = new Date(year, month - 1, day);
@@ -557,6 +557,7 @@ function renderCalendar(monthString) {
     }
     if (weekend) {
       monthCounts.weekendDays += 1;
+      weekendDaysByWeek.set(weekKey, (weekendDaysByWeek.get(weekKey) || 0) + 1);
     }
 
     if (!weekStats.has(weekKey)) {
@@ -568,6 +569,12 @@ function renderCalendar(monthString) {
       monthCounts[currentStatus] += 1;
     }
   }
+
+  weekendDaysByWeek.forEach((weekendDays) => {
+    if (weekendDays >= 2) {
+      monthCounts.longWeekends += 1;
+    }
+  });
 
   updateMonthOverview(monthCounts);
 
