@@ -37,6 +37,30 @@ function isToday(date) {
     && date.getDate() === now.getDate();
 }
 
+function getHighlightedWeekRange() {
+  const referenceDate = new Date();
+
+  if (referenceDate.getDay() === 0) {
+    referenceDate.setDate(referenceDate.getDate() + 1);
+  }
+
+  const dayOfWeek = referenceDate.getDay();
+  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+
+  const weekStart = new Date(referenceDate);
+  weekStart.setHours(0, 0, 0, 0);
+  weekStart.setDate(referenceDate.getDate() + diffToMonday);
+
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+
+  return { weekStart, weekEnd };
+}
+
+function isInHighlightedWeek(date, weekStart, weekEnd) {
+  return date >= weekStart && date <= weekEnd;
+}
+
 async function saveDayStatus(dateString, value) {
   const response = await fetch('api.php', {
     method: 'POST',
@@ -239,6 +263,7 @@ function renderCalendar(monthString) {
 
   const [year, month] = monthString.split('-').map(Number);
   const daysInMonth = new Date(year, month, 0).getDate();
+  const { weekStart, weekEnd } = getHighlightedWeekRange();
 
   for (let day = 1; day <= daysInMonth; day += 1) {
     const cellDate = new Date(year, month - 1, day);
@@ -254,6 +279,9 @@ function renderCalendar(monthString) {
     }
     if (isToday(cellDate)) {
       row.classList.add('is-today');
+    }
+    if (isInHighlightedWeek(cellDate, weekStart, weekEnd)) {
+      row.classList.add('is-current-week');
     }
 
     const dayName = document.createElement('div');
