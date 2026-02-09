@@ -236,20 +236,44 @@ $initialMonth = date('Y-m');
       min-width: 150px;
     }
     .notes-toggle {
-      width: 100%;
+      width: 2.2rem;
+      height: 2.2rem;
+      padding: 0;
+      border-radius: 999px;
+      position: relative;
+      transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
+    }
+    .notes-toggle:hover,
+    .notes-toggle:focus-visible {
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 .15rem rgba(13, 110, 253, .15);
+    }
+    .notes-toggle.has-note::after {
+      content: '';
+      position: absolute;
+      top: .24rem;
+      right: .24rem;
+      width: .4rem;
+      height: .4rem;
+      border-radius: 999px;
+      background: #dc3545;
+      box-shadow: 0 0 0 .08rem #fff;
     }
     .notes-input {
       resize: vertical;
       min-height: 70px;
       opacity: 1;
-      max-height: 190px;
+      max-height: 210px;
       overflow: hidden;
-      transition: max-height .22s ease, opacity .2s ease, margin-top .22s ease;
+      transform-origin: top;
+      transform: translateY(0);
+      transition: max-height .28s ease, opacity .25s ease, margin-top .28s ease, transform .25s ease;
     }
     .notes-input.is-collapsed {
       opacity: 0;
       max-height: 0;
       margin-top: 0 !important;
+      transform: translateY(-6px);
       pointer-events: none;
       padding-top: 0;
       padding-bottom: 0;
