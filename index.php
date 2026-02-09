@@ -19,7 +19,7 @@ $initialMonth = date('Y-m');
       padding: .75rem 1rem;
       background-color: #fff;
       display: grid;
-      grid-template-columns: 52px 1fr auto auto minmax(150px, 240px);
+      grid-template-columns: 52px 1fr minmax(190px, 240px) auto minmax(150px, 220px);
       align-items: center;
       gap: .75rem;
     }
@@ -98,39 +98,45 @@ $initialMonth = date('Y-m');
       padding: .1rem .4rem;
       vertical-align: middle;
     }
-    .status-options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .4rem;
-      justify-content: flex-end;
-    }
-    .status-option {
-      border: 1px solid #dee2e6;
-      border-radius: 999px;
-      padding: .3rem .75rem;
-      font-size: .85rem;
-      font-weight: 600;
-      color: #212529;
-      background-color: #fff;
-      opacity: 1;
+    .status-hero {
+      border: 2px solid #ced4da;
+      border-radius: .8rem;
+      padding: .5rem .65rem;
+      background: #fff;
       transition: all .15s ease;
     }
-    .status-option:hover {
-      border-color: #adb5bd;
+    .status-hero-label {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.1;
     }
-    .status-option.is-selected {
-      opacity: 1;
-      border-color: #212529;
-      box-shadow: 0 0 0 .1rem rgba(33, 37, 41, 0.1);
+    .status-hero-hint {
+      margin-top: .18rem;
+      font-size: .74rem;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      font-weight: 600;
     }
-    .status-option.is-selected.status-full {
+    .status-hero.status-full {
+      border-color: #e7a65c;
       background-color: #ffd8a8;
     }
-    .status-option.is-selected.status-half {
+    .status-hero.status-half {
+      border-color: #f1c86a;
       background-color: #ffeccc;
     }
-    .status-option.is-selected.status-off {
+    .status-hero.status-off {
+      border-color: #9fd8b5;
       background-color: #f2fcf4;
+    }
+    .is-clickable-status {
+      cursor: pointer;
+    }
+    .is-clickable-status:hover .status-hero,
+    .is-clickable-status:focus-visible .status-hero {
+      box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .15);
+      transform: translateY(-1px);
     }
     .andreas-heart-toggle {
       display: inline-flex;
@@ -182,7 +188,7 @@ $initialMonth = date('Y-m');
       .calendar-day {
         grid-template-columns: 52px 1fr;
       }
-      .status-options,
+      .status-hero,
       .form-check,
       .notes-control {
         grid-column: 1 / -1;
