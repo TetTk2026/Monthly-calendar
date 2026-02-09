@@ -229,19 +229,25 @@ function createAndreasCheckbox(dateString, currentValue) {
 
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
-  checkbox.className = 'form-check-input';
+  checkbox.className = 'form-check-input visually-hidden';
   checkbox.id = `andreas-${dateString}`;
   checkbox.checked = Boolean(currentValue);
 
   const label = document.createElement('label');
-  label.className = 'form-check-label small';
+  label.className = 'andreas-heart-toggle';
   label.setAttribute('for', checkbox.id);
-  label.textContent = 'Andreas ';
+  label.setAttribute('aria-label', 'Mark heart');
 
   const heart = document.createElement('span');
   heart.className = 'andreas-heart';
   heart.textContent = '♥';
+
+  const check = document.createElement('span');
+  check.className = 'andreas-heart-check';
+  check.textContent = '✓';
+
   label.appendChild(heart);
+  label.appendChild(check);
 
   checkbox.addEventListener('change', async () => {
     try {
