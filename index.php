@@ -127,8 +127,46 @@ $initialMonth = date('Y-m');
     .status-option.is-selected.status-off {
       background-color: #9adbb3;
     }
-    .andreas-heart {
+    .andreas-heart-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.2rem;
+      height: 2.2rem;
+      border: 2px solid #dc3545;
+      border-radius: 999px;
+      cursor: pointer;
+      user-select: none;
+      transition: all .15s ease;
       color: #dc3545;
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+    .form-check-input:focus + .andreas-heart-toggle {
+      box-shadow: 0 0 0 .15rem rgba(220, 53, 69, .2);
+    }
+    .andreas-heart {
+      transform: translateY(-.01rem);
+    }
+    .andreas-heart-check {
+      display: none;
+      font-size: .75rem;
+      margin-left: .2rem;
+      font-weight: 700;
+      transform: translateY(.01rem);
+    }
+    .form-check-input:checked + .andreas-heart-toggle {
+      background-color: #dc3545;
+      color: #fff;
+    }
+    .form-check-input:checked + .andreas-heart-toggle .andreas-heart-check {
+      display: inline;
+    }
+    .form-check-input:not(:checked) + .andreas-heart-toggle .andreas-heart-check {
+      display: none;
+    }
+    .form-check {
+      justify-self: end;
     }
     .notes-control {
       min-width: 150px;
