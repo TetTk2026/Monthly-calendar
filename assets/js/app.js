@@ -152,7 +152,7 @@ function renderCalendar(monthString) {
     dateLabel.textContent = String(day);
 
     const entry = monthEntries[dateString] || { status: '', andreas: false };
-    const dropdown = createStatusDropdown(dateString, entry.status || '');
+    const dropdown = createStatusButtons(dateString, entry.status || '');
     const andreasCheckbox = createAndreasCheckbox(dateString, entry.andreas || false);
 
     row.appendChild(dayName);
