@@ -13,6 +13,33 @@ function respond(int $status, array $payload): void
     exit;
 }
 
+function normalizeStatus(mixed $status): ?string
+{
+    if (!is_string($status)) {
+        return null;
+    }
+
+    $normalized = strtolower(trim($status));
+
+    $map = [
+        '' => '',
+        'full' => 'full',
+        'fullday' => 'full',
+        'full day' => 'full',
+        'full-day' => 'full',
+        'half' => 'half',
+        'halfday' => 'half',
+        'half day' => 'half',
+        'half-day' => 'half',
+        'off' => 'off',
+        'dayoff' => 'off',
+        'day off' => 'off',
+        'day-off' => 'off',
+    ];
+
+    return $map[$normalized] ?? null;
+}
+
 function loadData(string $file): array
 {
     $contents = file_get_contents($file);
@@ -21,7 +48,23 @@ function loadData(string $file): array
     }
 
     $decoded = json_decode($contents, true);
-    return is_array($decoded) ? $decoded : [];
+    if (!is_array($decoded)) {
+        return [];
+    }
+
+    $clean = [];
+    foreach ($decoded as $date => $status) {
+        if (!is_string($date)) {
+            continue;
+        }
+
+        $normalizedStatus = normalizeStatus($status);
+        if ($normalizedStatus !== null && $normalizedStatus !== '') {
+            $clean[$date] = $normalizedStatus;
+        }
+    }
+
+    return $clean;
 }
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -51,13 +94,12 @@ if ($method === 'POST') {
     }
 
     $date = $payload['date'] ?? '';
-    $status = $payload['status'] ?? '';
-    $allowed = ['full', 'half', 'off', ''];
+    $status = normalizeStatus($payload['status'] ?? null);
 
     if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
         respond(400, ['error' => 'Invalid date format. Use YYYY-MM-DD.']);
     }
-    if (!in_array($status, $allowed, true)) {
+    if ($status === null) {
         respond(400, ['error' => 'Invalid status value.']);
     }
 
@@ -68,7 +110,7 @@ if ($method === 'POST') {
         $data[$date] = $status;
     }
 
-    if (file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) === false) {
+    if (file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX) === false) {
         respond(500, ['error' => 'Failed to save data.']);
     }
 
