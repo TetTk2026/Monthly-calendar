@@ -102,22 +102,6 @@ function getMonthPoeticHint(monthCounts) {
   return '';
 }
 
-function createEmptyWeekSummary() {
-  const summary = document.createElement('div');
-  summary.className = 'week-summary';
-
-  const line = document.createElement('div');
-  line.textContent = 'No entries yet';
-
-  const poem = document.createElement('div');
-  poem.className = 'week-summary-poem';
-  poem.textContent = 'A quiet week. Anything planned?';
-
-  summary.appendChild(line);
-  summary.appendChild(poem);
-  return summary;
-}
-
 function updateMonthOverview(monthCounts) {
   monthOverview.innerHTML = '';
   const items = [
@@ -178,6 +162,7 @@ function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
 
   const weekSummary = document.createElement('div');
   weekSummary.className = 'week-summary';
+  weekSummary.classList.toggle('is-empty', !hasEntries);
 
   const weekSummaryText = document.createElement('div');
   weekSummaryText.textContent = summaryText;
@@ -217,10 +202,6 @@ function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
   section.appendChild(weekLabel);
   section.appendChild(weekSummary);
   section.appendChild(weekRows);
-
-  if (!hasEntries) {
-    weekRows.appendChild(createEmptyWeekSummary());
-  }
 
   return { section, weekRows };
 }
@@ -358,7 +339,21 @@ function updateStatusHero(hero, status) {
     hero.classList.add(`status-${status}`);
   }
 
-  hero.querySelector('.status-hero-label').textContent = statusLabelByValue[status] || 'Set day status';
+  const iconByStatus = {
+    full: '●',
+    half: '◐',
+    off: '○'
+  };
+  const label = hero.querySelector('.status-hero-label');
+  label.innerHTML = '';
+  const shape = document.createElement('span');
+  shape.className = 'status-shape';
+  shape.textContent = iconByStatus[status] || '◌';
+
+  const text = document.createElement('span');
+  text.textContent = statusLabelByValue[status] || 'Set day status';
+  label.appendChild(shape);
+  label.appendChild(text);
 }
 
 async function cycleDayStatus(dateString, row, statusHero) {
@@ -370,9 +365,9 @@ async function cycleDayStatus(dateString, row, statusHero) {
     row.dataset.status = nextStatus;
     applyRowStatusClass(row, nextStatus);
     updateStatusHero(statusHero, nextStatus);
-    row.classList.remove('status-morph');
-    void row.offsetWidth;
-    row.classList.add('status-morph');
+    statusHero.classList.remove('status-morph');
+    void statusHero.offsetWidth;
+    statusHero.classList.add('status-morph');
     renderCalendar(monthPicker.value);
     showFeedback('Saved');
   } catch (error) {
@@ -467,7 +462,7 @@ function createNotesControl(dateString, currentValue) {
   const applyExpandedState = () => {
     const expanded = Boolean(notesExpandedByDate[dateString]);
     notesInput.classList.toggle('is-collapsed', !expanded);
-    toggleButton.textContent = expanded ? '📝' : '🗒';
+    toggleButton.textContent = '📝';
     toggleButton.setAttribute('aria-expanded', String(expanded));
   };
 
@@ -578,6 +573,9 @@ function renderCalendar(monthString) {
       row.classList.add('is-current-week');
     }
 
+    const dayMain = document.createElement('div');
+    dayMain.className = 'day-main';
+
     const dayName = document.createElement('div');
     dayName.className = 'day-name';
     dayName.textContent = weekdayNames[cellDate.getDay()];
@@ -600,8 +598,15 @@ function renderCalendar(monthString) {
     const statusControl = sunday
       ? createSundayOffLabel()
       : createStatusHero(currentStatus);
+    dayMain.appendChild(dayName);
+    dayMain.appendChild(dateLabel);
+
     const andreasCheckbox = createAndreasCheckbox(dateString, entry.andreas || false);
     const notesControl = createNotesControl(dateString, entry.notes || '');
+    const actions = document.createElement('div');
+    actions.className = 'day-actions';
+    actions.appendChild(andreasCheckbox);
+    actions.appendChild(notesControl);
 
     andreasCheckbox.addEventListener('click', (event) => event.stopPropagation());
     notesControl.addEventListener('click', (event) => event.stopPropagation());
@@ -622,11 +627,9 @@ function renderCalendar(monthString) {
       });
     }
 
-    row.appendChild(dayName);
-    row.appendChild(dateLabel);
+    row.appendChild(dayMain);
     row.appendChild(statusControl);
-    row.appendChild(andreasCheckbox);
-    row.appendChild(notesControl);
+    row.appendChild(actions);
     weeks.get(weekKey).weekRows.appendChild(row);
   }
 }
