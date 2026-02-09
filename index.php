@@ -24,12 +24,12 @@ $initialMonth = date('Y-m');
     .calendar-day {
       border: 0;
       border-radius: 0;
-      padding: .35rem .6rem;
+      padding: .2rem .5rem;
       background-color: transparent;
       display: grid;
-      grid-template-columns: minmax(88px, 115px) minmax(120px, 1fr) 88px;
+      grid-template-columns: minmax(72px, 96px) minmax(120px, 1fr) 72px;
       align-items: center;
-      gap: .45rem;
+      gap: .3rem;
       transition: background-color .2s ease;
     }
     .calendar-day + .calendar-day {
@@ -196,20 +196,20 @@ $initialMonth = date('Y-m');
       line-height: 1.05;
     }
     .day-name {
-      font-size: .82rem;
+      font-size: .72rem;
       font-weight: 600;
       color: #5c6a78;
       letter-spacing: .01em;
     }
     .day-number {
-      font-size: 1.2rem;
+      font-size: 1rem;
       font-weight: 800;
       color: #1f2937;
     }
     .day-number .today-chip {
       display: inline-block;
       margin-left: .4rem;
-      font-size: .62rem;
+      font-size: .56rem;
       font-weight: 600;
       letter-spacing: .02em;
       text-transform: uppercase;
@@ -233,18 +233,18 @@ $initialMonth = date('Y-m');
       transition: color .2s ease;
     }
     .status-hero-label {
-      font-size: .78rem;
+      font-size: .72rem;
       font-weight: 600;
       line-height: 1.1;
       display: inline-flex;
       align-items: center;
-      gap: .35rem;
+      gap: .28rem;
       color: #1f2937;
       text-transform: uppercase;
       letter-spacing: .02em;
     }
     .status-shape {
-      font-size: 1.35rem;
+      font-size: 1.05rem;
       color: var(--accent);
       line-height: 1;
     }
@@ -258,22 +258,22 @@ $initialMonth = date('Y-m');
     .is-clickable-status:focus-visible .status-hero {
       color: #0b48be;
     }
-    .andreas-heart-toggle {
+    .heart-toggle {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 2rem;
-      height: 2rem;
+      min-width: 1.7rem;
+      height: 1.7rem;
       border: 2px solid #adb5bd;
       border-radius: 999px;
       cursor: pointer;
       user-select: none;
       transition: all .15s ease;
       color: #6c757d;
-      font-size: 1.2rem;
+      font-size: 1rem;
       line-height: 1;
     }
-    .andreas-heart-toggle.heart-pop {
+    .heart-toggle.heart-pop {
       animation: heartPop .25s ease;
     }
     @keyframes heartPop {
@@ -281,13 +281,13 @@ $initialMonth = date('Y-m');
       45% { transform: scale(1.18); }
       100% { transform: scale(1); }
     }
-    .form-check-input:focus + .andreas-heart-toggle {
+    .form-check-input:focus + .heart-toggle {
       box-shadow: 0 0 0 .15rem rgba(220, 53, 69, .2);
     }
-    .andreas-heart {
+    .heart-icon {
       transform: translateY(-.01rem);
     }
-    .form-check-input:checked + .andreas-heart-toggle {
+    .form-check-input:checked + .heart-toggle {
       background-color: #dc3545;
       border-color: #dc3545;
       color: #fff;
@@ -314,8 +314,8 @@ $initialMonth = date('Y-m');
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      gap: .35rem;
-      width: 88px;
+      gap: .28rem;
+      width: 72px;
     }
     .notes-control {
       min-width: 40px;
@@ -323,8 +323,8 @@ $initialMonth = date('Y-m');
       justify-content: flex-end;
     }
     .notes-toggle {
-      width: 2rem;
-      height: 2rem;
+      width: 1.7rem;
+      height: 1.7rem;
       padding: 0;
       border-radius: 999px;
       position: relative;
