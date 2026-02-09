@@ -16,6 +16,64 @@ function isSunday(date) {
   return date.getDay() === 0;
 }
 
+function getWeekStart(date) {
+  const weekStart = new Date(date);
+  weekStart.setHours(0, 0, 0, 0);
+  const day = weekStart.getDay();
+  const distanceFromMonday = day === 0 ? 6 : day - 1;
+  weekStart.setDate(weekStart.getDate() - distanceFromMonday);
+  return weekStart;
+}
+
+function createWeekKey(date) {
+  const weekStart = getWeekStart(date);
+  return formatDate(weekStart);
+}
+
+function isPastWeek(weekStartDate) {
+  const currentWeekStart = getWeekStart(new Date());
+  return weekStartDate.getTime() < currentWeekStart.getTime();
+}
+
+function createWeekSection(weekStartDate) {
+  const section = document.createElement('section');
+  section.className = 'week-group';
+
+  const weekLabel = document.createElement('button');
+  weekLabel.type = 'button';
+  weekLabel.className = 'week-toggle';
+  weekLabel.textContent = `Week of ${weekStartDate.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric'
+  })}`;
+
+  const weekRows = document.createElement('div');
+  weekRows.className = 'week-rows';
+
+  const collapsedByDefault = isPastWeek(weekStartDate);
+  section.classList.toggle('is-collapsed', collapsedByDefault);
+
+  const syncLabel = () => {
+    const collapsed = section.classList.contains('is-collapsed');
+    weekLabel.setAttribute('aria-expanded', String(!collapsed));
+    weekLabel.textContent = `${collapsed ? 'Show' : 'Hide'} week of ${weekStartDate.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric'
+    })}`;
+  };
+
+  weekLabel.addEventListener('click', () => {
+    section.classList.toggle('is-collapsed');
+    syncLabel();
+  });
+
+  syncLabel();
+  section.appendChild(weekLabel);
+  section.appendChild(weekRows);
+
+  return { section, weekRows };
+}
+
 function showFeedback(message, type = 'success') {
   feedback.className = `alert alert-${type}`;
   feedback.textContent = message;
@@ -265,9 +323,19 @@ function renderCalendar(monthString) {
   const daysInMonth = new Date(year, month, 0).getDate();
   const { weekStart, weekEnd } = getHighlightedWeekRange();
 
+  const weeks = new Map();
+
   for (let day = 1; day <= daysInMonth; day += 1) {
     const cellDate = new Date(year, month - 1, day);
     const dateString = formatDate(cellDate);
+    const weekKey = createWeekKey(cellDate);
+
+    if (!weeks.has(weekKey)) {
+      const weekStartDate = getWeekStart(cellDate);
+      const weekSection = createWeekSection(weekStartDate);
+      weeks.set(weekKey, weekSection);
+      calendarGrid.appendChild(weekSection.section);
+    }
 
     const row = document.createElement('div');
     row.className = 'calendar-day';
@@ -313,7 +381,7 @@ function renderCalendar(monthString) {
     row.appendChild(statusControl);
     row.appendChild(andreasCheckbox);
     row.appendChild(notesControl);
-    calendarGrid.appendChild(row);
+    weeks.get(weekKey).weekRows.appendChild(row);
   }
 }
 

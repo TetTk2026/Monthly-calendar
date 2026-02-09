@@ -43,7 +43,33 @@ $initialMonth = date('Y-m');
     .calendar-list {
       display: flex;
       flex-direction: column;
+      gap: .75rem;
+    }
+    .week-group {
+      border: 1px solid #dee2e6;
+      border-radius: .6rem;
+      background-color: #f8f9fa;
+      padding: .5rem;
+    }
+    .week-toggle {
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: transparent;
+      padding: .3rem .35rem .5rem;
+      font-weight: 600;
+      color: #495057;
+    }
+    .week-toggle:hover {
+      color: #212529;
+    }
+    .week-rows {
+      display: flex;
+      flex-direction: column;
       gap: .5rem;
+    }
+    .week-group.is-collapsed .week-rows {
+      display: none;
     }
     .day-number {
       font-weight: 700;
