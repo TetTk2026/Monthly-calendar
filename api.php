@@ -40,6 +40,67 @@ function normalizeStatus($status)
     return isset($map[$normalized]) ? $map[$normalized] : null;
 }
 
+function normalizeAndreas($value)
+{
+    if (is_bool($value)) {
+        return $value;
+    }
+
+    if (is_int($value)) {
+        return $value === 1;
+    }
+
+    if (is_string($value)) {
+        $normalized = strtolower(trim($value));
+        $truthy = ['1', 'true', 'yes', 'on'];
+        $falsy = ['0', 'false', 'no', 'off', ''];
+        if (in_array($normalized, $truthy, true)) {
+            return true;
+        }
+        if (in_array($normalized, $falsy, true)) {
+            return false;
+        }
+    }
+
+    return null;
+}
+
+function normalizeEntry($entry)
+{
+    $result = [
+        'status' => '',
+        'andreas' => false,
+    ];
+
+    if (is_string($entry)) {
+        $status = normalizeStatus($entry);
+        if ($status !== null) {
+            $result['status'] = $status;
+        }
+        return $result;
+    }
+
+    if (!is_array($entry)) {
+        return $result;
+    }
+
+    if (array_key_exists('status', $entry)) {
+        $status = normalizeStatus($entry['status']);
+        if ($status !== null) {
+            $result['status'] = $status;
+        }
+    }
+
+    if (array_key_exists('andreas', $entry)) {
+        $andreas = normalizeAndreas($entry['andreas']);
+        if ($andreas !== null) {
+            $result['andreas'] = $andreas;
+        }
+    }
+
+    return $result;
+}
+
 function loadData($file)
 {
     $contents = file_get_contents($file);
@@ -53,14 +114,14 @@ function loadData($file)
     }
 
     $clean = [];
-    foreach ($decoded as $date => $status) {
+    foreach ($decoded as $date => $entry) {
         if (!is_string($date)) {
             continue;
         }
 
-        $normalizedStatus = normalizeStatus($status);
-        if ($normalizedStatus !== null && $normalizedStatus !== '') {
-            $clean[$date] = $normalizedStatus;
+        $normalizedEntry = normalizeEntry($entry);
+        if ($normalizedEntry['status'] !== '' || $normalizedEntry['andreas']) {
+            $clean[$date] = $normalizedEntry;
         }
     }
 
@@ -77,9 +138,9 @@ if ($method === 'GET') {
 
     $data = loadData($dataFile);
     $result = [];
-    foreach ($data as $date => $status) {
+    foreach ($data as $date => $entry) {
         if (strpos($date, $month . '-') === 0) {
-            $result[$date] = $status;
+            $result[$date] = $entry;
         }
     }
 
@@ -94,20 +155,40 @@ if ($method === 'POST') {
     }
 
     $date = isset($payload['date']) ? $payload['date'] : '';
-    $status = normalizeStatus(isset($payload['status']) ? $payload['status'] : null);
+    $statusProvided = array_key_exists('status', $payload);
+    $andreasProvided = array_key_exists('andreas', $payload);
+
+    if (!$statusProvided && !$andreasProvided) {
+        respond(400, ['error' => 'No fields provided to update.']);
+    }
+
+    $status = $statusProvided ? normalizeStatus($payload['status']) : null;
+    $andreas = $andreasProvided ? normalizeAndreas($payload['andreas']) : null;
 
     if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
         respond(400, ['error' => 'Invalid date format. Use YYYY-MM-DD.']);
     }
-    if ($status === null) {
+    if ($statusProvided && $status === null) {
         respond(400, ['error' => 'Invalid status value.']);
+    }
+    if ($andreasProvided && $andreas === null) {
+        respond(400, ['error' => 'Invalid Andreas value.']);
     }
 
     $data = loadData($dataFile);
-    if ($status === '') {
+    $existing = isset($data[$date]) ? normalizeEntry($data[$date]) : ['status' => '', 'andreas' => false];
+
+    if ($statusProvided) {
+        $existing['status'] = $status;
+    }
+    if ($andreasProvided) {
+        $existing['andreas'] = $andreas;
+    }
+
+    if ($existing['status'] === '' && !$existing['andreas']) {
         unset($data[$date]);
     } else {
-        $data[$date] = $status;
+        $data[$date] = $existing;
     }
 
     if (file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX) === false) {

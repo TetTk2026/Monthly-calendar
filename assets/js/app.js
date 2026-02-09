@@ -36,7 +36,37 @@ async function saveDayStatus(dateString, value) {
     throw new Error('Failed to save entry');
   }
 
-  monthEntries[dateString] = value;
+  const current = monthEntries[dateString] || { status: '', andreas: false };
+  current.status = value;
+
+  if (current.status === '' && !current.andreas) {
+    delete monthEntries[dateString];
+    return;
+  }
+
+  monthEntries[dateString] = current;
+}
+
+async function saveAndreas(dateString, value) {
+  const response = await fetch('api.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date: dateString, andreas: value })
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to save Andreas entry');
+  }
+
+  const current = monthEntries[dateString] || { status: '', andreas: false };
+  current.andreas = value;
+
+  if (current.status === '' && !current.andreas) {
+    delete monthEntries[dateString];
+    return;
+  }
+
+  monthEntries[dateString] = current;
 }
 
 function createStatusButtons(dateString, currentValue) {
@@ -70,6 +100,36 @@ function createStatusButtons(dateString, currentValue) {
   return wrapper;
 }
 
+function createAndreasCheckbox(dateString, currentValue) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'form-check m-0';
+
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.className = 'form-check-input';
+  checkbox.id = `andreas-${dateString}`;
+  checkbox.checked = Boolean(currentValue);
+
+  const label = document.createElement('label');
+  label.className = 'form-check-label small';
+  label.setAttribute('for', checkbox.id);
+  label.textContent = 'Go to Andreas';
+
+  checkbox.addEventListener('change', async () => {
+    try {
+      await saveAndreas(dateString, checkbox.checked);
+      showFeedback('Saved');
+    } catch (error) {
+      checkbox.checked = !checkbox.checked;
+      showFeedback('Could not save entry', 'danger');
+    }
+  });
+
+  wrapper.appendChild(checkbox);
+  wrapper.appendChild(label);
+  return wrapper;
+}
+
 function renderCalendar(monthString) {
   calendarGrid.innerHTML = '';
 
@@ -91,11 +151,14 @@ function renderCalendar(monthString) {
     dateLabel.className = 'day-number';
     dateLabel.textContent = String(day);
 
-    const buttons = createStatusButtons(dateString, monthEntries[dateString] || '');
+    const entry = monthEntries[dateString] || { status: '', andreas: false };
+    const dropdown = createStatusDropdown(dateString, entry.status || '');
+    const andreasCheckbox = createAndreasCheckbox(dateString, entry.andreas || false);
 
     row.appendChild(dayName);
     row.appendChild(dateLabel);
-    row.appendChild(buttons);
+    row.appendChild(dropdown);
+    row.appendChild(andreasCheckbox);
     calendarGrid.appendChild(row);
   }
 }
