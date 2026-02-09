@@ -5,6 +5,7 @@ const calendarGrid = document.getElementById('calendarGrid');
 const feedback = document.getElementById('feedback');
 const monthOverview = document.getElementById('monthOverview');
 const togglePastWeeksButton = document.getElementById('togglePastWeeks');
+const pastWeeksSummary = document.getElementById('pastWeeksSummary');
 
 const statuses = [
   { value: 'off', label: 'Off', className: 'status-off' },
@@ -78,6 +79,16 @@ function updatePastWeeksVisibility() {
 
   togglePastWeeksButton.textContent = showPastWeeks ? 'Hide past weeks' : 'Show past weeks';
   togglePastWeeksButton.setAttribute('aria-pressed', String(showPastWeeks));
+
+  const pastWeekCount = calendarGrid.querySelectorAll('.week-group.is-past-week').length;
+  if (pastWeeksSummary) {
+    if (pastWeekCount > 0) {
+      const label = `${pastWeekCount} hidden past ${pastWeekCount === 1 ? 'week' : 'weeks'}`;
+      pastWeeksSummary.textContent = showPastWeeks ? `${pastWeekCount} past ${pastWeekCount === 1 ? 'week' : 'weeks'} visible` : label;
+    } else {
+      pastWeeksSummary.textContent = '';
+    }
+  }
 }
 
 function collapsePastWeeks() {
@@ -384,13 +395,20 @@ async function cycleDayStatus(dateString, row, statusHero) {
 }
 
 function createStatusHero(currentValue) {
-  const hero = document.createElement('div');
+  const hero = document.createElement('button');
+  hero.type = 'button';
   hero.className = 'status-hero';
+  hero.setAttribute('aria-label', 'Cycle day status');
 
   const label = document.createElement('div');
   label.className = 'status-hero-label';
 
+  const hint = document.createElement('div');
+  hint.className = 'status-hint';
+  hint.textContent = 'Click status to change';
+
   hero.appendChild(label);
+  hero.appendChild(hint);
   updateStatusHero(hero, currentValue);
 
   return hero;
@@ -606,14 +624,13 @@ function renderCalendar(monthString) {
     notesInput.addEventListener('click', (event) => event.stopPropagation());
     notesInput.addEventListener('keydown', (event) => event.stopPropagation());
 
-    row.classList.add('is-clickable-status');
-    row.setAttribute('role', 'button');
-    row.setAttribute('tabindex', '0');
-    row.setAttribute('aria-label', `Cycle status for ${dateString}`);
-    row.addEventListener('click', () => {
+    statusControl.classList.add('is-clickable-status');
+    statusControl.setAttribute('aria-label', `Cycle status for ${dateString}`);
+    statusControl.addEventListener('click', (event) => {
+      event.stopPropagation();
       cycleDayStatus(dateString, row, statusControl);
     });
-    row.addEventListener('keydown', (event) => {
+    statusControl.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         cycleDayStatus(dateString, row, statusControl);
