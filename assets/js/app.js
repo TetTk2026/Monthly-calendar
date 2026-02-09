@@ -11,6 +11,10 @@ const statuses = [
 const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 let monthEntries = {};
 
+function isSunday(date) {
+  return date.getDay() === 0;
+}
+
 function showFeedback(message, type = 'success') {
   feedback.className = `alert alert-${type}`;
   feedback.textContent = message;
@@ -135,6 +139,13 @@ function createAndreasCheckbox(dateString, currentValue) {
   return wrapper;
 }
 
+function createSundayOffLabel() {
+  const label = document.createElement('div');
+  label.className = 'small text-muted fw-semibold';
+  label.textContent = 'Day off (Sunday)';
+  return label;
+}
+
 function renderCalendar(monthString) {
   calendarGrid.innerHTML = '';
 
@@ -160,12 +171,16 @@ function renderCalendar(monthString) {
     dateLabel.textContent = String(day);
 
     const entry = monthEntries[dateString] || { status: '', andreas: false };
-    const dropdown = createStatusButtons(dateString, entry.status || '');
+    const sunday = isSunday(cellDate);
+    const currentStatus = sunday ? 'off' : (entry.status || '');
+    const statusControl = sunday
+      ? createSundayOffLabel()
+      : createStatusButtons(dateString, currentStatus);
     const andreasCheckbox = createAndreasCheckbox(dateString, entry.andreas || false);
 
     row.appendChild(dayName);
     row.appendChild(dateLabel);
-    row.appendChild(dropdown);
+    row.appendChild(statusControl);
     row.appendChild(andreasCheckbox);
     calendarGrid.appendChild(row);
   }
