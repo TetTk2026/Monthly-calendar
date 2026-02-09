@@ -14,8 +14,8 @@ $initialMonth = date('Y-m');
       border-radius: .5rem;
       padding: .75rem 1rem;
       background-color: #fff;
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
       align-items: center;
       gap: .75rem;
     }
@@ -26,6 +26,12 @@ $initialMonth = date('Y-m');
     }
     .day-number {
       font-weight: 700;
+    }
+    .day-name {
+      font-weight: 600;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: .04em;
     }
     .status-button {
       min-width: 130px;
