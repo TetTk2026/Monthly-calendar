@@ -22,19 +22,21 @@ $initialMonth = date('Y-m');
       --status-off: #f6f9ff;
     }
     .calendar-day {
-      border: 1px solid var(--line);
-      border-radius: .5rem;
-      padding: .85rem 1rem;
-      background-color: var(--row-bg);
+      border: 0;
+      border-radius: 0;
+      padding: .35rem .6rem;
+      background-color: transparent;
       display: grid;
-      grid-template-columns: minmax(88px, 115px) minmax(145px, 190px) minmax(190px, 1fr);
+      grid-template-columns: minmax(88px, 115px) minmax(120px, 1fr) 88px;
       align-items: center;
-      gap: .75rem;
-      transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+      gap: .45rem;
+      transition: background-color .2s ease;
+    }
+    .calendar-day + .calendar-day {
+      border-top: 1px solid var(--line);
     }
     .calendar-day:hover {
       background: var(--row-hover);
-      border-color: #c8d6ec;
     }
     .calendar-day.is-sunday {
       background-color: #f8fbff;
@@ -53,15 +55,11 @@ $initialMonth = date('Y-m');
     .calendar-day.is-sunday.is-half {
       background-color: #f8fbff;
     }
-    .calendar-day.is-week-start {
-      border-color: #c8d6ec;
-    }
     .calendar-day.is-today {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 .12rem rgba(37, 99, 235, .17);
+      background-color: rgba(37, 99, 235, .06);
     }
     .calendar-day.is-current-week {
-      box-shadow: inset 0 0 0 .07rem rgba(37, 99, 235, .2);
+      background-color: rgba(37, 99, 235, .03);
     }
     .status-hero.status-morph {
       animation: statusMorph .2s ease;
@@ -74,19 +72,20 @@ $initialMonth = date('Y-m');
     .calendar-list {
       display: flex;
       flex-direction: column;
-      gap: .95rem;
+      gap: .55rem;
     }
     .week-group {
-      border-radius: .6rem;
-      background-color: #f8fafc;
-      padding: .3rem .35rem;
+      border: 1px solid var(--line);
+      border-radius: .5rem;
+      padding: .25rem .5rem;
+      background-color: #fff;
     }
     .week-header {
       display: grid;
       grid-template-columns: auto auto minmax(180px, 1fr);
       align-items: center;
-      gap: .5rem;
-      padding: .1rem .35rem .35rem;
+      gap: .4rem;
+      padding: .05rem 0 .25rem;
     }
     .week-toggle {
       width: auto;
@@ -94,9 +93,9 @@ $initialMonth = date('Y-m');
       display: inline-flex;
       align-items: center;
       gap: .25rem;
-      border: none;
+      border: 0;
       background: transparent;
-      padding: .15rem .2rem;
+      padding: .1rem .2rem;
       font-weight: 600;
       color: #495057;
     }
@@ -148,7 +147,7 @@ $initialMonth = date('Y-m');
       max-height: 0;
     }
     .week-group.is-past-week {
-      padding: .15rem .3rem;
+      padding: .2rem .45rem;
     }
     .week-group.is-past-week .week-header {
       padding-bottom: .2rem;
@@ -163,7 +162,7 @@ $initialMonth = date('Y-m');
       display: none;
     }
     .week-group.is-past-week .week-rows {
-      gap: .45rem;
+      gap: 0;
     }
     .month-overview-strip {
       display: flex;
@@ -188,7 +187,7 @@ $initialMonth = date('Y-m');
     .week-rows {
       display: flex;
       flex-direction: column;
-      gap: .65rem;
+      gap: 0;
     }
     .week-group.is-collapsed .week-rows {
       display: none;
@@ -196,7 +195,8 @@ $initialMonth = date('Y-m');
     .day-main {
       display: flex;
       flex-direction: column;
-      line-height: 1.1;
+      align-items: flex-start;
+      line-height: 1.05;
     }
     .day-name {
       font-size: .82rem;
@@ -205,7 +205,7 @@ $initialMonth = date('Y-m');
       letter-spacing: .01em;
     }
     .day-number {
-      font-size: 1.35rem;
+      font-size: 1.2rem;
       font-weight: 800;
       color: #1f2937;
     }
@@ -229,15 +229,15 @@ $initialMonth = date('Y-m');
       50% { transform: scale(1.05); }
     }
     .status-hero {
-      border: 1px solid #cad4e2;
-      border-radius: .8rem;
-      padding: .52rem .65rem;
-      background: #fff;
-      transition: background-color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+      background: transparent;
+      transition: color .2s ease;
     }
     .status-hero-label {
-      font-size: 1rem;
-      font-weight: 700;
+      font-size: .95rem;
+      font-weight: 650;
       line-height: 1.1;
       display: inline-flex;
       align-items: center;
@@ -249,57 +249,29 @@ $initialMonth = date('Y-m');
       color: var(--accent);
       line-height: 1;
     }
-    .status-hero-hint {
-      margin-top: .18rem;
-      font-size: .74rem;
-      color: #6c757d;
-      text-transform: uppercase;
-      letter-spacing: .03em;
-      font-weight: 600;
-      opacity: 0;
-      max-height: 0;
-      overflow: hidden;
-      transition: opacity .15s ease, max-height .2s ease;
-    }
-    .status-hero.status-full {
-      border-color: #b6c9e7;
-      background-color: var(--status-full);
-    }
-    .status-hero.status-half {
-      border-color: #bfd1eb;
-      background-color: var(--status-half);
-    }
-    .status-hero.status-off {
-      border-color: #cddaf0;
-      background-color: var(--status-off);
-    }
+    .status-hero.status-full { color: #0f3f9e; }
+    .status-hero.status-half { color: #2458b8; }
+    .status-hero.status-off { color: #4c6ea7; }
     .is-clickable-status {
       cursor: pointer;
     }
     .is-clickable-status:hover .status-hero,
     .is-clickable-status:focus-visible .status-hero {
-      box-shadow: 0 0 0 .18rem rgba(37, 99, 235, .14);
-      transform: translateY(-1px);
-    }
-    .is-clickable-status:hover .status-hero-hint,
-    .is-clickable-status:focus-visible .status-hero-hint,
-    .is-clickable-status:focus-within .status-hero-hint {
-      opacity: 1;
-      max-height: 1.25rem;
+      color: #0b48be;
     }
     .andreas-heart-toggle {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 2.2rem;
-      height: 2.2rem;
+      min-width: 2rem;
+      height: 2rem;
       border: 2px solid #adb5bd;
       border-radius: 999px;
       cursor: pointer;
       user-select: none;
       transition: all .15s ease;
       color: #6c757d;
-      font-size: 1.35rem;
+      font-size: 1.2rem;
       line-height: 1;
     }
     .andreas-heart-toggle.heart-pop {
@@ -333,17 +305,17 @@ $initialMonth = date('Y-m');
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      gap: .5rem;
-      width: 100%;
+      gap: .35rem;
+      width: 88px;
     }
     .notes-control {
-      min-width: 72px;
+      min-width: 40px;
       display: flex;
       justify-content: flex-end;
     }
     .notes-toggle {
-      width: 2.2rem;
-      height: 2.2rem;
+      width: 2rem;
+      height: 2rem;
       padding: 0;
       border-radius: 999px;
       position: relative;
@@ -367,7 +339,7 @@ $initialMonth = date('Y-m');
     }
     .notes-input {
       resize: vertical;
-      min-height: 70px;
+      min-height: 64px;
       opacity: 1;
       max-height: 210px;
       overflow: hidden;
@@ -387,7 +359,7 @@ $initialMonth = date('Y-m');
     }
     @media (max-width: 992px) {
       .calendar-day {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr auto;
       }
       .week-header {
         grid-template-columns: auto 1fr;
@@ -397,12 +369,11 @@ $initialMonth = date('Y-m');
         justify-self: start;
       }
       .status-hero,
-      .day-actions,
       .notes-control {
         grid-column: 1 / -1;
       }
       .day-actions {
-        justify-content: flex-start;
+        grid-column: 2;
       }
     }
   </style>
@@ -421,13 +392,9 @@ $initialMonth = date('Y-m');
 
     <div id="feedback" class="alert d-none" role="alert"></div>
 
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <div id="monthOverview" class="month-overview-strip"></div>
-        <div id="monthEmptyHint" class="month-empty-hint d-none"></div>
-        <div class="calendar-list" id="calendarGrid"></div>
-      </div>
-    </div>
+    <div id="monthOverview" class="month-overview-strip"></div>
+    <div id="monthEmptyHint" class="month-empty-hint d-none"></div>
+    <div class="calendar-list" id="calendarGrid"></div>
   </div>
 
   <script src="assets/js/app.js?v=<?= urlencode((string) filemtime(__DIR__ . '/assets/js/app.js')); ?>"></script>
