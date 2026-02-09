@@ -82,6 +82,8 @@ async function saveAndreas(dateString, value) {
 
 function applyRowStatusClass(row, status) {
   row.classList.toggle('is-off', status === 'off');
+  row.classList.toggle('is-full', status === 'full');
+  row.classList.toggle('is-half', status === 'half');
 }
 
 function createStatusButtons(dateString, currentValue, row) {

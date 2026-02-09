@@ -9,6 +9,9 @@ $initialMonth = date('Y-m');
   <title>Work Schedule Planner</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <style>
+    body {
+      background-color: #eef9ef;
+    }
     .calendar-day {
       border: 1px solid #dee2e6;
       border-left: .12rem solid #dee2e6;
@@ -80,10 +83,10 @@ $initialMonth = date('Y-m');
       box-shadow: 0 0 0 .1rem rgba(33, 37, 41, 0.1);
     }
     .status-option.is-selected.status-full {
-      background-color: #fdc45a;
+      background-color: #ffe8b6;
     }
     .status-option.is-selected.status-half {
-      background-color: #ffe680;
+      background-color: #fff2c7;
     }
     .status-option.is-selected.status-off {
       background-color: #9adbb3;
@@ -93,7 +96,7 @@ $initialMonth = date('Y-m');
     }
   </style>
 </head>
-<body class="bg-light">
+<body>
   <div class="container py-4">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
       <h1 class="h3 mb-0">Work Schedule Planner</h1>
