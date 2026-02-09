@@ -11,6 +11,7 @@ $initialMonth = date('Y-m');
   <style>
     .calendar-day {
       border: 1px solid #dee2e6;
+      border-left: .12rem solid #dee2e6;
       border-radius: .5rem;
       padding: .75rem 1rem;
       background-color: #fff;
@@ -25,6 +26,13 @@ $initialMonth = date('Y-m');
     .calendar-day.is-off {
       background-color: #9adbb3;
     }
+    .calendar-day.is-week-start {
+      border-left: .32rem solid #0d6efd;
+    }
+    .calendar-day.is-today {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 .15rem rgba(13, 110, 253, .2);
+    }
     .calendar-list {
       display: flex;
       flex-direction: column;
@@ -32,6 +40,19 @@ $initialMonth = date('Y-m');
     }
     .day-number {
       font-weight: 700;
+    }
+    .day-number .today-chip {
+      display: inline-block;
+      margin-left: .35rem;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      color: #0d6efd;
+      background: rgba(13, 110, 253, .12);
+      border-radius: 999px;
+      padding: .1rem .4rem;
+      vertical-align: middle;
     }
     .status-options {
       display: flex;

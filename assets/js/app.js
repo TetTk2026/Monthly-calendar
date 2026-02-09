@@ -29,6 +29,13 @@ function formatDate(date) {
   return `${year}-${month}-${day}`;
 }
 
+function isToday(date) {
+  const now = new Date();
+  return date.getFullYear() === now.getFullYear()
+    && date.getMonth() === now.getMonth()
+    && date.getDate() === now.getDate();
+}
+
 async function saveDayStatus(dateString, value) {
   const response = await fetch('api.php', {
     method: 'POST',
@@ -166,6 +173,12 @@ function renderCalendar(monthString) {
     if (cellDate.getDay() === 0) {
       row.classList.add('is-sunday');
     }
+    if (cellDate.getDay() === 1) {
+      row.classList.add('is-week-start');
+    }
+    if (isToday(cellDate)) {
+      row.classList.add('is-today');
+    }
 
     const dayName = document.createElement('div');
     dayName.className = 'day-name';
@@ -174,6 +187,12 @@ function renderCalendar(monthString) {
     const dateLabel = document.createElement('div');
     dateLabel.className = 'day-number';
     dateLabel.textContent = String(day);
+    if (isToday(cellDate)) {
+      const todayChip = document.createElement('span');
+      todayChip.className = 'today-chip';
+      todayChip.textContent = 'Today';
+      dateLabel.appendChild(todayChip);
+    }
 
     const entry = monthEntries[dateString] || { status: 'off', andreas: false };
     const sunday = isSunday(cellDate);
