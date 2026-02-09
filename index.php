@@ -17,9 +17,12 @@ $initialMonth = date('Y-m');
       --line: #dbe3ec;
       --row-bg: #ffffff;
       --row-hover: #f8fbff;
-      --status-full: #e8f1ff;
-      --status-half: #f1f6ff;
-      --status-off: #f6f9ff;
+      --status-full: #e8f6ee;
+      --status-half: #fff4d8;
+      --status-off: #eef1f7;
+      --status-full-ink: #1f7a43;
+      --status-half-ink: #a36400;
+      --status-off-ink: #556273;
     }
     .calendar-day {
       border: 0;
@@ -248,15 +251,18 @@ $initialMonth = date('Y-m');
       color: var(--accent);
       line-height: 1;
     }
-    .status-hero.status-full { color: #0f3f9e; }
-    .status-hero.status-half { color: #2458b8; }
-    .status-hero.status-off { color: #4c6ea7; }
+    .status-hero.status-full { color: var(--status-full-ink); }
+    .status-hero.status-half { color: var(--status-half-ink); }
+    .status-hero.status-off { color: var(--status-off-ink); }
+    .status-hero.status-full .status-shape { color: var(--status-full-ink); }
+    .status-hero.status-half .status-shape { color: var(--status-half-ink); }
+    .status-hero.status-off .status-shape { color: var(--status-off-ink); }
     .is-clickable-status {
       cursor: pointer;
     }
     .is-clickable-status:hover .status-hero,
     .is-clickable-status:focus-visible .status-hero {
-      color: #0b48be;
+      filter: brightness(.9);
     }
     .heart-toggle {
       display: inline-flex;
