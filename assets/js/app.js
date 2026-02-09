@@ -345,7 +345,7 @@ function createNotesControl(dateString, currentValue) {
 function createSundayOffLabel() {
   const label = document.createElement('div');
   label.className = 'small text-muted fw-semibold';
-  label.textContent = 'Day off (Sunday)';
+  label.textContent = '';
   return label;
 }
 
