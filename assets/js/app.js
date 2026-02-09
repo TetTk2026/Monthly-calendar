@@ -4,6 +4,7 @@ const nextMonthButton = document.getElementById('nextMonth');
 const calendarGrid = document.getElementById('calendarGrid');
 const feedback = document.getElementById('feedback');
 const monthOverview = document.getElementById('monthOverview');
+const monthEmptyHint = document.getElementById('monthEmptyHint');
 
 const statuses = [
   { value: 'off', label: 'Off', className: 'status-off' },
@@ -46,44 +47,81 @@ Object.assign(notesExpandedByDate, loadStoredMap(NOTES_VISIBILITY_STORAGE_KEY));
 Object.assign(weekCollapsedByKey, loadStoredMap(WEEK_COLLAPSE_STORAGE_KEY));
 
 
+function formatCount(value, singularLabel, pluralLabel) {
+  return `${value} ${value === 1 ? singularLabel : pluralLabel}`;
+}
+
+function buildSummaryText(counts) {
+  return `${formatCount(counts.full, 'full day', 'full days')} · ${formatCount(counts.half, 'half', 'halves')} · ${counts.off} off`;
+}
+
+function getWeekPoeticHint(counts) {
+  const total = counts.full + counts.half + counts.off;
+  if (total === 0) {
+    return 'A quiet week. Anything planned?';
+  }
+  if (counts.full >= 5) {
+    return 'A steady rhythm carries this week.';
+  }
+  if (counts.off >= 2) {
+    return 'Room to breathe between the days.';
+  }
+  return 'A gentle balance across the week.';
+}
+
 function getMonthPoeticHint(monthCounts) {
-  if (monthCounts.weekendDays >= 8 && monthCounts.hearts >= 4) {
-    return 'Long-weekend energy: equal parts adventure, cuddles, and unapologetic lounging.';
+  const totalPlanned = monthCounts.full + monthCounts.half + monthCounts.off;
+  if (totalPlanned === 0 && monthCounts.hearts === 0) {
+    return 'This month is still a blank page.';
   }
 
-  if (monthCounts.weekendDays >= 8) {
-    return 'Eight weekend days spotted — this month is built for long-weekend plans.';
+  if (monthCounts.hearts >= 8 && monthCounts.weekendDays >= 8) {
+    return 'Cupid filed your month under: premium romance package.';
+  }
+
+  if (monthCounts.hearts >= 6 && monthCounts.weekendDays >= 8) {
+    return 'Long weekend with your sweetheart? This is basically a rom-com calendar.';
+  }
+
+  if (monthCounts.hearts >= 5 && monthCounts.weekendDays >= 6) {
+    return 'Long weekends with your sweetheart: dangerously cute levels detected.';
+  }
+
+  if (monthCounts.hearts >= 3) {
+    return 'Heart count is rising. Your calendar is flirting back.';
   }
 
   if (monthCounts.weekendDays >= 6) {
-    return 'Long weekends are showing up — keep a bag packed for spontaneous fun.';
+    return 'Weekend mode unlocked: naps, snacks, and sweetheart attacks.';
   }
 
-  if (monthCounts.hearts >= 4) {
-    return 'Love-heavy schedule detected. Weekend plans might get extra cute.';
+  if (monthCounts.hearts >= 1 && monthCounts.weekendDays >= 2) {
+    return 'Weekend + heart combo achieved. Certified cute schedule.';
   }
 
-  return 'Hover the counts for your monthly vibe.';
+  return '';
 }
 
 function updateMonthOverview(monthCounts) {
   monthOverview.innerHTML = '';
-  const funHint = getMonthPoeticHint(monthCounts);
   const items = [
-    { icon: '⬛', value: monthCounts.full, label: 'full days' },
-    { icon: '◐', value: monthCounts.half, label: 'half days' },
-    { icon: '🛌', value: monthCounts.off, label: 'days off' },
-    { icon: '❤️', value: monthCounts.hearts, label: 'sweetheart days' },
-    { icon: '🛋️', value: monthCounts.weekendDays, label: 'weekend days' }
+    { label: 'full days', value: monthCounts.full },
+    { label: 'half days', value: monthCounts.half },
+    { label: 'days off', value: monthCounts.off },
+    { label: 'sweetheart days ♥', value: monthCounts.hearts },
+    { label: 'weekend days', value: monthCounts.weekendDays }
   ];
 
   items.forEach((item) => {
     const pill = document.createElement('span');
     pill.className = 'month-overview-pill';
-    pill.textContent = `${item.value} ${item.icon}`;
-    pill.title = `${item.value} ${item.label} — ${funHint}`;
+    pill.textContent = `${item.value} ${item.label}`;
     monthOverview.appendChild(pill);
   });
+
+  const hint = getMonthPoeticHint(monthCounts);
+  monthEmptyHint.textContent = hint;
+  monthEmptyHint.classList.toggle('d-none', !hint);
 }
 
 function isSunday(date) {
@@ -109,7 +147,7 @@ function isPastWeek(weekStartDate) {
   return weekStartDate.getTime() < currentWeekStart.getTime();
 }
 
-function createWeekSection(weekStartDate, counts) {
+function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
   const section = document.createElement('section');
   section.className = 'week-group';
   const weekKey = formatDate(weekStartDate);
@@ -117,30 +155,24 @@ function createWeekSection(weekStartDate, counts) {
   const weekLabel = document.createElement('button');
   weekLabel.type = 'button';
   weekLabel.className = 'week-toggle';
-
-  const weekLabelMain = document.createElement('span');
-  weekLabelMain.className = 'week-toggle-main';
-
-  const weekTitle = document.createElement('span');
-  weekTitle.className = 'week-toggle-title';
-  weekTitle.textContent = `Week of ${weekStartDate.toLocaleDateString(undefined, {
+  weekLabel.textContent = `Week of ${weekStartDate.toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric'
   })}`;
 
-  const weekMeta = document.createElement('span');
-  weekMeta.className = 'week-toggle-meta';
-  weekMeta.textContent = `${counts.full} ⬛ ${counts.half} ◐ ${counts.off} 🛌`;
+  const weekSummary = document.createElement('div');
+  weekSummary.className = 'week-summary';
+  weekSummary.classList.toggle('is-empty', !hasEntries);
 
-  weekLabelMain.appendChild(weekTitle);
-  weekLabelMain.appendChild(weekMeta);
+  const weekSummaryText = document.createElement('div');
+  weekSummaryText.textContent = summaryText;
 
-  const weekSummaryInline = document.createElement('span');
-  weekSummaryInline.className = 'week-summary-inline';
-  weekSummaryInline.textContent = 'Hover monthly stats for the fun text';
+  const weekSummaryPoem = document.createElement('div');
+  weekSummaryPoem.className = 'week-summary-poem';
+  weekSummaryPoem.textContent = poeticHint;
 
-  weekLabel.appendChild(weekLabelMain);
-  weekLabel.appendChild(weekSummaryInline);
+  weekSummary.appendChild(weekSummaryText);
+  weekSummary.appendChild(weekSummaryPoem);
 
   const weekRows = document.createElement('div');
   weekRows.className = 'week-rows';
@@ -153,7 +185,10 @@ function createWeekSection(weekStartDate, counts) {
   const syncLabel = () => {
     const collapsed = section.classList.contains('is-collapsed');
     weekLabel.setAttribute('aria-expanded', String(!collapsed));
-    weekLabel.classList.toggle('is-collapsed', collapsed);
+    weekLabel.textContent = `${collapsed ? 'Show' : 'Hide'} week of ${weekStartDate.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric'
+    })}`;
   };
 
   weekLabel.addEventListener('click', () => {
@@ -165,6 +200,7 @@ function createWeekSection(weekStartDate, counts) {
 
   syncLabel();
   section.appendChild(weekLabel);
+  section.appendChild(weekSummary);
   section.appendChild(weekRows);
 
   return { section, weekRows };
@@ -304,9 +340,9 @@ function updateStatusHero(hero, status) {
   }
 
   const iconByStatus = {
-    full: '⬛',
+    full: '●',
     half: '◐',
-    off: '🛌'
+    off: '○'
   };
   const label = hero.querySelector('.status-hero-label');
   label.innerHTML = '';
@@ -460,7 +496,7 @@ function createNotesControl(dateString, currentValue) {
 function createSundayOffLabel() {
   const label = document.createElement('div');
   label.className = 'status-hero status-off';
-  label.innerHTML = '<div class="status-hero-label">🛌 Off</div><div class="status-hero-hint">Sunday</div>';
+  label.innerHTML = '<div class="status-hero-label">Off</div><div class="status-hero-hint">Sunday</div>';
   return label;
 }
 
@@ -510,7 +546,14 @@ function renderCalendar(monthString) {
     if (!weeks.has(weekKey)) {
       const weekStartDate = getWeekStart(cellDate);
       const counts = weekStats.get(weekKey) || { full: 0, half: 0, off: 0 };
-      const weekSection = createWeekSection(weekStartDate, counts);
+      const summaryText = buildSummaryText(counts);
+      const hasEntries = counts.full + counts.half + counts.off > 0;
+      const weekSection = createWeekSection(
+        weekStartDate,
+        summaryText,
+        getWeekPoeticHint(counts),
+        hasEntries
+      );
       weeks.set(weekKey, weekSection);
       calendarGrid.appendChild(weekSection.section);
     }
