@@ -24,16 +24,21 @@ $initialMonth = date('Y-m');
       gap: .75rem;
     }
     .calendar-day.is-sunday {
-      background-color: #f5f5f5;
+      background-color: #eef6ff;
     }
     .calendar-day.is-off {
-      background-color: #9adbb3;
+      background-color: #f2fcf4;
     }
     .calendar-day.is-full {
-      background-color: #ffe8b6;
+      background-color: #ffd8a8;
     }
     .calendar-day.is-half {
-      background-color: #fff2c7;
+      background-color: #ffeccc;
+    }
+    .calendar-day.is-sunday.is-off,
+    .calendar-day.is-sunday.is-full,
+    .calendar-day.is-sunday.is-half {
+      background-color: #eef6ff;
     }
     .calendar-day.is-week-start {
       border-left: .32rem solid #0d6efd;
@@ -119,13 +124,13 @@ $initialMonth = date('Y-m');
       box-shadow: 0 0 0 .1rem rgba(33, 37, 41, 0.1);
     }
     .status-option.is-selected.status-full {
-      background-color: #ffe8b6;
+      background-color: #ffd8a8;
     }
     .status-option.is-selected.status-half {
-      background-color: #fff2c7;
+      background-color: #ffeccc;
     }
     .status-option.is-selected.status-off {
-      background-color: #9adbb3;
+      background-color: #f2fcf4;
     }
     .andreas-heart-toggle {
       display: inline-flex;

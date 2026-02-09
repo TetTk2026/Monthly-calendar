@@ -130,7 +130,7 @@ async function saveDayStatus(dateString, value) {
     throw new Error('Failed to save entry');
   }
 
-  const current = monthEntries[dateString] || { status: 'off', andreas: false, notes: '' };
+  const current = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
   current.status = value;
 
   if (current.status === '' && !current.andreas && !current.notes) {
@@ -152,7 +152,7 @@ async function saveAndreas(dateString, value) {
     throw new Error('Failed to save Andreas entry');
   }
 
-  const current = monthEntries[dateString] || { status: 'off', andreas: false, notes: '' };
+  const current = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
   current.andreas = value;
 
   if (current.status === '' && !current.andreas && !current.notes) {
@@ -174,7 +174,7 @@ async function saveNotes(dateString, value) {
     throw new Error('Failed to save notes');
   }
 
-  const current = monthEntries[dateString] || { status: 'off', andreas: false, notes: '' };
+  const current = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
   current.notes = value;
 
   if (current.status === '' && !current.andreas && !current.notes) {
@@ -372,9 +372,9 @@ function renderCalendar(monthString) {
       dateLabel.appendChild(todayChip);
     }
 
-    const entry = monthEntries[dateString] || { status: 'off', andreas: false, notes: '' };
+    const entry = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
     const sunday = isSunday(cellDate);
-    const currentStatus = entry.status || 'off';
+    const currentStatus = sunday ? 'off' : (entry.status || '');
     applyRowStatusClass(row, currentStatus);
     const statusControl = sunday
       ? createSundayOffLabel()
