@@ -113,7 +113,12 @@ function createAndreasCheckbox(dateString, currentValue) {
   const label = document.createElement('label');
   label.className = 'form-check-label small';
   label.setAttribute('for', checkbox.id);
-  label.textContent = 'Go to Andreas';
+  label.textContent = 'Andreas ';
+
+  const heart = document.createElement('span');
+  heart.className = 'andreas-heart';
+  heart.textContent = '♥';
+  label.appendChild(heart);
 
   checkbox.addEventListener('change', async () => {
     try {
