@@ -4,6 +4,8 @@ const nextMonthButton = document.getElementById('nextMonth');
 const calendarGrid = document.getElementById('calendarGrid');
 const feedback = document.getElementById('feedback');
 const monthOverview = document.getElementById('monthOverview');
+const hidePastWeeksToggle = document.getElementById('hidePastWeeksToggle');
+const pastWeeksCountInput = document.getElementById('pastWeeksCount');
 
 const statuses = [
   { value: 'off', label: 'Off', className: 'status-off' },
@@ -24,6 +26,7 @@ const weekCollapsedByKey = {};
 
 const NOTES_VISIBILITY_STORAGE_KEY = 'calendarNotesVisibility';
 const WEEK_COLLAPSE_STORAGE_KEY = 'calendarWeekCollapsed';
+const HIDE_PAST_WEEKS_SETTINGS_KEY = 'calendarHidePastWeeksSettings';
 
 function loadStoredMap(key) {
   try {
@@ -44,6 +47,90 @@ function persistMap(key, value) {
 
 Object.assign(notesExpandedByDate, loadStoredMap(NOTES_VISIBILITY_STORAGE_KEY));
 Object.assign(weekCollapsedByKey, loadStoredMap(WEEK_COLLAPSE_STORAGE_KEY));
+
+function loadPastWeeksSettings() {
+  const defaults = { enabled: false, keepWeeks: 4 };
+
+  try {
+    const rawValue = window.localStorage.getItem(HIDE_PAST_WEEKS_SETTINGS_KEY);
+    if (!rawValue) {
+      return defaults;
+    }
+
+    const parsed = JSON.parse(rawValue);
+    const keepWeeks = Number(parsed.keepWeeks);
+
+    return {
+      enabled: Boolean(parsed.enabled),
+      keepWeeks: Number.isFinite(keepWeeks) ? Math.min(12, Math.max(1, Math.round(keepWeeks))) : defaults.keepWeeks
+    };
+  } catch (error) {
+    return defaults;
+  }
+}
+
+function savePastWeeksSettings(settings) {
+  try {
+    window.localStorage.setItem(HIDE_PAST_WEEKS_SETTINGS_KEY, JSON.stringify(settings));
+  } catch (error) {
+    // Ignore storage write errors.
+  }
+}
+
+function getOldestVisiblePastWeekStart(keepWeeks) {
+  const currentWeekStart = getWeekStart(new Date());
+  const oldestVisible = new Date(currentWeekStart);
+  oldestVisible.setDate(oldestVisible.getDate() - ((keepWeeks - 1) * 7));
+  return oldestVisible;
+}
+
+function applyPastWeeksVisibility() {
+  if (!hidePastWeeksToggle || !pastWeeksCountInput) {
+    return;
+  }
+
+  const enabled = hidePastWeeksToggle.checked;
+  const keepWeeks = Math.min(12, Math.max(1, Number(pastWeeksCountInput.value) || 1));
+  pastWeeksCountInput.value = String(keepWeeks);
+
+  const oldestVisible = getOldestVisiblePastWeekStart(keepWeeks);
+
+  const weekGroups = calendarGrid.querySelectorAll('.week-group[data-week-start]');
+  weekGroups.forEach((group) => {
+    const weekStartValue = group.getAttribute('data-week-start');
+    const weekStart = weekStartValue ? new Date(`${weekStartValue}T00:00:00`) : null;
+    if (!weekStart || Number.isNaN(weekStart.getTime())) {
+      return;
+    }
+
+    const pastWeek = weekStart.getTime() < getWeekStart(new Date()).getTime();
+    const hideWeek = enabled && pastWeek && weekStart.getTime() < oldestVisible.getTime();
+    group.classList.toggle('d-none', hideWeek);
+  });
+
+  savePastWeeksSettings({ enabled, keepWeeks });
+}
+
+function initPastWeeksControls() {
+  if (!hidePastWeeksToggle || !pastWeeksCountInput) {
+    return;
+  }
+
+  const settings = loadPastWeeksSettings();
+  hidePastWeeksToggle.checked = settings.enabled;
+  pastWeeksCountInput.value = String(settings.keepWeeks);
+
+  hidePastWeeksToggle.addEventListener('change', () => {
+    applyPastWeeksVisibility();
+  });
+
+  const syncPastWeekCount = () => {
+    applyPastWeeksVisibility();
+  };
+
+  pastWeeksCountInput.addEventListener('change', syncPastWeekCount);
+  pastWeeksCountInput.addEventListener('input', syncPastWeekCount);
+}
 
 function updateMonthOverview(monthCounts) {
   monthOverview.innerHTML = '';
@@ -578,6 +665,8 @@ function renderCalendar(monthString) {
     row.appendChild(notesInput);
     weeks.get(weekKey).weekRows.appendChild(row);
   }
+
+  applyPastWeeksVisibility();
 }
 
 
@@ -615,4 +704,5 @@ nextMonthButton.addEventListener('click', () => {
   loadMonth(monthPicker.value);
 });
 
+initPastWeeksControls();
 loadMonth(monthPicker.value);
