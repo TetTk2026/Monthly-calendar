@@ -76,7 +76,7 @@ function updatePastWeeksVisibility() {
     return;
   }
 
-  togglePastWeeksButton.textContent = showPastWeeks ? 'Collapse past weeks' : 'Show past weeks';
+  togglePastWeeksButton.textContent = showPastWeeks ? 'Hide past weeks' : 'Show past weeks';
   togglePastWeeksButton.setAttribute('aria-pressed', String(showPastWeeks));
 }
 
@@ -110,7 +110,7 @@ function collapsePastWeeks() {
 if (togglePastWeeksButton) {
   togglePastWeeksButton.addEventListener('click', () => {
     showPastWeeks = !showPastWeeks;
-    if (showPastWeeks) {
+    if (!showPastWeeks) {
       collapsePastWeeks();
     }
     persistBoolean(SHOW_PAST_WEEKS_STORAGE_KEY, showPastWeeks);

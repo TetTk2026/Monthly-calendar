@@ -39,7 +39,7 @@ $initialMonth = date('Y-m');
       background: var(--row-hover);
     }
     .calendar-day.is-sunday {
-      background-color: #f8fbff;
+      box-shadow: inset 3px 0 0 rgba(37, 99, 235, .2);
     }
     .calendar-day.is-off {
       background-color: var(--status-off);
@@ -50,16 +50,11 @@ $initialMonth = date('Y-m');
     .calendar-day.is-half {
       background-color: var(--status-half);
     }
-    .calendar-day.is-sunday.is-off,
-    .calendar-day.is-sunday.is-full,
-    .calendar-day.is-sunday.is-half {
-      background-color: #f8fbff;
-    }
     .calendar-day.is-today {
       background-color: rgba(37, 99, 235, .06);
     }
     .calendar-day.is-current-week {
-      background-color: rgba(37, 99, 235, .03);
+      background-color: rgba(37, 99, 235, .08);
     }
     .status-hero.status-morph {
       animation: statusMorph .2s ease;
