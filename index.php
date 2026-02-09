@@ -10,7 +10,7 @@ $initialMonth = date('Y-m');
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <style>
     body {
-      background-color: #eef9ef;
+      background-color: white;
     }
     .calendar-day {
       border: 1px solid #dee2e6;
@@ -22,6 +22,7 @@ $initialMonth = date('Y-m');
       grid-template-columns: 52px 1fr minmax(190px, 240px) auto minmax(150px, 220px);
       align-items: center;
       gap: .75rem;
+      transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
     .calendar-day.is-sunday {
       background-color: #eef6ff;
@@ -50,6 +51,14 @@ $initialMonth = date('Y-m');
     .calendar-day.is-current-week {
       border-left-color: #20c997;
       box-shadow: inset 0 0 0 .08rem rgba(32, 201, 151, .35);
+    }
+    .calendar-day.status-morph {
+      animation: statusMorph .2s ease;
+    }
+    @keyframes statusMorph {
+      0% { filter: saturate(1); }
+      50% { filter: saturate(1.08) brightness(1.02); }
+      100% { filter: saturate(1); }
     }
     .calendar-list {
       display: flex;
@@ -134,7 +143,7 @@ $initialMonth = date('Y-m');
       border-radius: .8rem;
       padding: .5rem .65rem;
       background: #fff;
-      transition: all .15s ease;
+      transition: background-color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
     }
     .status-hero-label {
       font-size: 1rem;
@@ -148,6 +157,10 @@ $initialMonth = date('Y-m');
       text-transform: uppercase;
       letter-spacing: .03em;
       font-weight: 600;
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: opacity .15s ease, max-height .2s ease;
     }
     .status-hero.status-full {
       border-color: #e7a65c;
@@ -169,6 +182,12 @@ $initialMonth = date('Y-m');
       box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .15);
       transform: translateY(-1px);
     }
+    .is-clickable-status:hover .status-hero-hint,
+    .is-clickable-status:focus-visible .status-hero-hint,
+    .is-clickable-status:focus-within .status-hero-hint {
+      opacity: 1;
+      max-height: 1.25rem;
+    }
     .andreas-heart-toggle {
       display: inline-flex;
       align-items: center;
@@ -183,6 +202,14 @@ $initialMonth = date('Y-m');
       color: #6c757d;
       font-size: 1.35rem;
       line-height: 1;
+    }
+    .andreas-heart-toggle.heart-pop {
+      animation: heartPop .25s ease;
+    }
+    @keyframes heartPop {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.18); }
+      100% { transform: scale(1); }
     }
     .form-check-input:focus + .andreas-heart-toggle {
       box-shadow: 0 0 0 .15rem rgba(220, 53, 69, .2);
@@ -214,6 +241,19 @@ $initialMonth = date('Y-m');
     .notes-input {
       resize: vertical;
       min-height: 70px;
+      opacity: 1;
+      max-height: 190px;
+      overflow: hidden;
+      transition: max-height .22s ease, opacity .2s ease, margin-top .22s ease;
+    }
+    .notes-input.is-collapsed {
+      opacity: 0;
+      max-height: 0;
+      margin-top: 0 !important;
+      pointer-events: none;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-width: 0;
     }
     @media (max-width: 992px) {
       .calendar-day {

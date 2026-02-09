@@ -70,8 +70,25 @@ function getWeekPoeticHint(counts) {
 }
 
 function getMonthPoeticHint(monthCounts) {
-  if (monthCounts.full + monthCounts.half + monthCounts.off === 0) {
+  const totalPlanned = monthCounts.full + monthCounts.half + monthCounts.off;
+  if (totalPlanned === 0 && monthCounts.hearts === 0) {
     return 'This month is still a blank page.';
+  }
+
+  if (monthCounts.hearts >= 8 && monthCounts.weekendDays >= 8) {
+    return 'Cupid filed your month under: premium romance package.';
+  }
+
+  if (monthCounts.hearts >= 5 && monthCounts.weekendDays >= 6) {
+    return 'Long weekends with your sweetheart: dangerously cute levels detected.';
+  }
+
+  if (monthCounts.hearts >= 3) {
+    return 'Heart count is rising. Your calendar is flirting back.';
+  }
+
+  if (monthCounts.weekendDays >= 6) {
+    return 'Weekend mode unlocked: naps, snacks, and sweetheart attacks.';
   }
 
   return '';
@@ -98,7 +115,9 @@ function updateMonthOverview(monthCounts) {
   const items = [
     { label: 'full days', value: monthCounts.full },
     { label: 'half days', value: monthCounts.half },
-    { label: 'days off', value: monthCounts.off }
+    { label: 'days off', value: monthCounts.off },
+    { label: 'sweetheart days ♥', value: monthCounts.hearts },
+    { label: 'weekend days', value: monthCounts.weekendDays }
   ];
 
   items.forEach((item) => {
@@ -343,6 +362,9 @@ async function cycleDayStatus(dateString, row, statusHero) {
     row.dataset.status = nextStatus;
     applyRowStatusClass(row, nextStatus);
     updateStatusHero(statusHero, nextStatus);
+    row.classList.remove('status-morph');
+    void row.offsetWidth;
+    row.classList.add('status-morph');
     renderCalendar(monthPicker.value);
     showFeedback('Saved');
   } catch (error) {
@@ -389,6 +411,9 @@ function createAndreasCheckbox(dateString, currentValue) {
   label.appendChild(heart);
 
   checkbox.addEventListener('change', async () => {
+    label.classList.remove('heart-pop');
+    void label.offsetWidth;
+    label.classList.add('heart-pop');
     try {
       await saveAndreas(dateString, checkbox.checked);
       showFeedback('Saved');
@@ -425,7 +450,7 @@ function createNotesControl(dateString, currentValue) {
 
   const applyExpandedState = () => {
     const expanded = Boolean(notesExpandedByDate[dateString]);
-    notesInput.classList.toggle('d-none', !expanded);
+    notesInput.classList.toggle('is-collapsed', !expanded);
     toggleButton.textContent = expanded ? 'Hide notes' : 'Show notes';
   };
 
@@ -472,7 +497,7 @@ function renderCalendar(monthString) {
 
   const weeks = new Map();
   const weekStats = new Map();
-  const monthCounts = { full: 0, half: 0, off: 0 };
+  const monthCounts = { full: 0, half: 0, off: 0, hearts: 0, weekendDays: 0 };
 
   for (let day = 1; day <= daysInMonth; day += 1) {
     const cellDate = new Date(year, month - 1, day);
@@ -480,6 +505,14 @@ function renderCalendar(monthString) {
     const weekKey = createWeekKey(cellDate);
     const entry = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
     const currentStatus = entry.status || '';
+    const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
+
+    if (entry.andreas) {
+      monthCounts.hearts += 1;
+    }
+    if (weekend) {
+      monthCounts.weekendDays += 1;
+    }
 
     if (!weekStats.has(weekKey)) {
       weekStats.set(weekKey, { full: 0, half: 0, off: 0 });
