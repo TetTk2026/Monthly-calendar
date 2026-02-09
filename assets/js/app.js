@@ -502,8 +502,7 @@ function createNotesControl(dateString, currentValue) {
   setToggleMeta();
   applyExpandedState();
   wrapper.appendChild(toggleButton);
-  wrapper.appendChild(notesInput);
-  return wrapper;
+  return { wrapper, notesInput };
 }
 
 function renderCalendar(monthString) {
@@ -606,7 +605,7 @@ function renderCalendar(monthString) {
     dayMain.appendChild(dateLabel);
 
     const andreasCheckbox = createAndreasCheckbox(dateString, entry.andreas || false);
-    const notesControl = createNotesControl(dateString, entry.notes || '');
+    const { wrapper: notesControl, notesInput } = createNotesControl(dateString, entry.notes || '');
     const actions = document.createElement('div');
     actions.className = 'day-actions';
     actions.appendChild(andreasCheckbox);
@@ -614,6 +613,8 @@ function renderCalendar(monthString) {
 
     andreasCheckbox.addEventListener('click', (event) => event.stopPropagation());
     notesControl.addEventListener('click', (event) => event.stopPropagation());
+    notesInput.addEventListener('click', (event) => event.stopPropagation());
+    notesInput.addEventListener('keydown', (event) => event.stopPropagation());
 
     row.classList.add('is-clickable-status');
     row.setAttribute('role', 'button');
@@ -632,6 +633,7 @@ function renderCalendar(monthString) {
     row.appendChild(dayMain);
     row.appendChild(statusControl);
     row.appendChild(actions);
+    row.appendChild(notesInput);
     weeks.get(weekKey).weekRows.appendChild(row);
   }
 }

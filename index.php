@@ -347,6 +347,8 @@ $initialMonth = date('Y-m');
       box-shadow: 0 0 0 .08rem #fff;
     }
     .notes-input {
+      grid-column: 1 / -1;
+      width: 100%;
       resize: vertical;
       min-height: 64px;
       opacity: 1;
