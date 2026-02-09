@@ -10,6 +10,7 @@ const statuses = [
 
 const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 let monthEntries = {};
+const notesExpandedByDate = {};
 
 function isSunday(date) {
   return date.getDay() === 0;
@@ -47,10 +48,10 @@ async function saveDayStatus(dateString, value) {
     throw new Error('Failed to save entry');
   }
 
-  const current = monthEntries[dateString] || { status: 'off', andreas: false };
+  const current = monthEntries[dateString] || { status: 'off', andreas: false, notes: '' };
   current.status = value;
 
-  if (current.status === '' && !current.andreas) {
+  if (current.status === '' && !current.andreas && !current.notes) {
     delete monthEntries[dateString];
     return;
   }
@@ -69,10 +70,32 @@ async function saveAndreas(dateString, value) {
     throw new Error('Failed to save Andreas entry');
   }
 
-  const current = monthEntries[dateString] || { status: 'off', andreas: false };
+  const current = monthEntries[dateString] || { status: 'off', andreas: false, notes: '' };
   current.andreas = value;
 
-  if (current.status === '' && !current.andreas) {
+  if (current.status === '' && !current.andreas && !current.notes) {
+    delete monthEntries[dateString];
+    return;
+  }
+
+  monthEntries[dateString] = current;
+}
+
+async function saveNotes(dateString, value) {
+  const response = await fetch('api.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date: dateString, notes: value })
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to save notes');
+  }
+
+  const current = monthEntries[dateString] || { status: 'off', andreas: false, notes: '' };
+  current.notes = value;
+
+  if (current.status === '' && !current.andreas && !current.notes) {
     delete monthEntries[dateString];
     return;
   }
@@ -153,6 +176,57 @@ function createAndreasCheckbox(dateString, currentValue) {
   return wrapper;
 }
 
+function createNotesControl(dateString, currentValue) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'notes-control';
+
+  const toggleButton = document.createElement('button');
+  toggleButton.type = 'button';
+  toggleButton.className = 'btn btn-sm btn-outline-secondary notes-toggle';
+
+  const notesInput = document.createElement('textarea');
+  notesInput.className = 'form-control form-control-sm notes-input mt-2';
+  notesInput.rows = 3;
+  notesInput.placeholder = 'Notes for this day';
+  notesInput.value = currentValue || '';
+
+  const hasNotes = Boolean(currentValue);
+  if (notesExpandedByDate[dateString] === undefined) {
+    notesExpandedByDate[dateString] = hasNotes;
+  }
+
+  const applyExpandedState = () => {
+    const expanded = Boolean(notesExpandedByDate[dateString]);
+    notesInput.classList.toggle('d-none', !expanded);
+    toggleButton.textContent = expanded ? 'Hide notes' : 'Show notes';
+  };
+
+  toggleButton.addEventListener('click', () => {
+    notesExpandedByDate[dateString] = !notesExpandedByDate[dateString];
+    applyExpandedState();
+  });
+
+  let saveTimer;
+  notesInput.addEventListener('input', () => {
+    window.clearTimeout(saveTimer);
+    saveTimer = window.setTimeout(async () => {
+      const previous = (monthEntries[dateString] && monthEntries[dateString].notes) || '';
+      try {
+        await saveNotes(dateString, notesInput.value.trim());
+        showFeedback('Saved');
+      } catch (error) {
+        notesInput.value = previous;
+        showFeedback('Could not save notes', 'danger');
+      }
+    }, 350);
+  });
+
+  applyExpandedState();
+  wrapper.appendChild(toggleButton);
+  wrapper.appendChild(notesInput);
+  return wrapper;
+}
+
 function createSundayOffLabel() {
   const label = document.createElement('div');
   label.className = 'small text-muted fw-semibold';
@@ -196,7 +270,7 @@ function renderCalendar(monthString) {
       dateLabel.appendChild(todayChip);
     }
 
-    const entry = monthEntries[dateString] || { status: 'off', andreas: false };
+    const entry = monthEntries[dateString] || { status: 'off', andreas: false, notes: '' };
     const sunday = isSunday(cellDate);
     const currentStatus = entry.status || 'off';
     applyRowStatusClass(row, currentStatus);
@@ -204,11 +278,13 @@ function renderCalendar(monthString) {
       ? createSundayOffLabel()
       : createStatusButtons(dateString, currentStatus, row);
     const andreasCheckbox = createAndreasCheckbox(dateString, entry.andreas || false);
+    const notesControl = createNotesControl(dateString, entry.notes || '');
 
     row.appendChild(dayName);
     row.appendChild(dateLabel);
     row.appendChild(statusControl);
     row.appendChild(andreasCheckbox);
+    row.appendChild(notesControl);
     calendarGrid.appendChild(row);
   }
 }
