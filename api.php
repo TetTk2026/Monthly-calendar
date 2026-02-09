@@ -2,8 +2,19 @@
 header('Content-Type: application/json; charset=utf-8');
 
 $dataFile = __DIR__ . '/data/schedule.json';
-if (!file_exists($dataFile)) {
-    file_put_contents($dataFile, json_encode(new stdClass(), JSON_PRETTY_PRINT));
+
+function ensureDataFile($file)
+{
+    $directory = dirname($file);
+    if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
+        return false;
+    }
+
+    if (!file_exists($file)) {
+        return file_put_contents($file, json_encode(new stdClass(), JSON_PRETTY_PRINT), LOCK_EX) !== false;
+    }
+
+    return true;
 }
 
 function respond($status, $payload)
@@ -103,6 +114,10 @@ function normalizeEntry($entry)
 
 function loadData($file)
 {
+    if (!ensureDataFile($file)) {
+        return null;
+    }
+
     $contents = file_get_contents($file);
     if ($contents === false || trim($contents) === '') {
         return [];
@@ -137,6 +152,10 @@ if ($method === 'GET') {
     }
 
     $data = loadData($dataFile);
+    if ($data === null) {
+        respond(500, ['error' => 'Failed to initialize data file.']);
+    }
+
     $result = [];
     foreach ($data as $date => $entry) {
         if (strpos($date, $month . '-') === 0) {
@@ -176,6 +195,10 @@ if ($method === 'POST') {
     }
 
     $data = loadData($dataFile);
+    if ($data === null) {
+        respond(500, ['error' => 'Failed to initialize data file.']);
+    }
+
     $existing = isset($data[$date]) ? normalizeEntry($data[$date]) : ['status' => '', 'andreas' => false];
 
     if ($statusProvided) {
