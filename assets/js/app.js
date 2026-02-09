@@ -3,10 +3,9 @@ const calendarGrid = document.getElementById('calendarGrid');
 const feedback = document.getElementById('feedback');
 
 const statuses = [
-  { value: '', label: 'Not set' },
-  { value: 'full', label: 'Full day' },
-  { value: 'half', label: 'Half day' },
-  { value: 'off', label: 'Day off' }
+  { value: 'full', label: 'Full day', buttonClass: 'status-full' },
+  { value: 'half', label: 'Half day', buttonClass: 'status-half' },
+  { value: 'off', label: 'Day off', buttonClass: 'status-off' }
 ];
 
 const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -37,66 +36,36 @@ async function saveDayStatus(dateString, value) {
     throw new Error('Failed to save entry');
   }
 
-  if (value === '') {
-    delete monthEntries[dateString];
-  } else {
-    monthEntries[dateString] = value;
-  }
+  monthEntries[dateString] = value;
 }
 
-function createStatusDropdown(dateString, currentValue) {
+function createStatusButtons(dateString, currentValue) {
   const wrapper = document.createElement('div');
-  wrapper.className = 'dropdown';
-
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'btn btn-outline-secondary btn-sm dropdown-toggle status-button';
-
-  const currentStatus = statuses.find((status) => status.value === currentValue) || statuses[0];
-  button.textContent = currentStatus.label;
-
-  const menu = document.createElement('ul');
-  menu.className = 'dropdown-menu dropdown-menu-end';
-
-  button.addEventListener('click', (event) => {
-    event.stopPropagation();
-    document.querySelectorAll('.dropdown-menu.show').forEach((openMenu) => {
-      if (openMenu !== menu) {
-        openMenu.classList.remove('show');
-      }
-    });
-    menu.classList.toggle('show');
-  });
+  wrapper.className = 'status-options';
 
   statuses.forEach((status) => {
-    const li = document.createElement('li');
-    const item = document.createElement('button');
-    item.type = 'button';
-    item.className = 'dropdown-item';
-    if (status.value === currentValue) {
-      item.classList.add('active');
-    }
-    item.textContent = status.label;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `status-option ${status.buttonClass}`;
+    button.textContent = status.label;
 
-    item.addEventListener('click', async () => {
+    if (status.value === currentValue) {
+      button.classList.add('is-selected');
+    }
+
+    button.addEventListener('click', async () => {
       try {
         await saveDayStatus(dateString, status.value);
-        button.textContent = status.label;
-        menu.querySelectorAll('.dropdown-item').forEach((element) => element.classList.remove('active'));
-        item.classList.add('active');
-        menu.classList.remove('show');
+        wrapper.querySelectorAll('.status-option').forEach((element) => element.classList.remove('is-selected'));
+        button.classList.add('is-selected');
         showFeedback('Saved');
       } catch (error) {
         showFeedback('Could not save entry', 'danger');
       }
     });
 
-    li.appendChild(item);
-    menu.appendChild(li);
+    wrapper.appendChild(button);
   });
-
-  wrapper.appendChild(button);
-  wrapper.appendChild(menu);
 
   return wrapper;
 }
@@ -118,10 +87,10 @@ function renderCalendar(monthString) {
     dateLabel.className = 'day-number';
     dateLabel.textContent = `${weekdayNames[cellDate.getDay()]} ${day}`;
 
-    const dropdown = createStatusDropdown(dateString, monthEntries[dateString] || '');
+    const buttons = createStatusButtons(dateString, monthEntries[dateString] || '');
 
     row.appendChild(dateLabel);
-    row.appendChild(dropdown);
+    row.appendChild(buttons);
     calendarGrid.appendChild(row);
   }
 }
@@ -142,10 +111,6 @@ async function loadMonth(monthString) {
 
 monthPicker.addEventListener('change', (event) => {
   loadMonth(event.target.value);
-});
-
-document.addEventListener('click', () => {
-  document.querySelectorAll('.dropdown-menu.show').forEach((menu) => menu.classList.remove('show'));
 });
 
 loadMonth(monthPicker.value);

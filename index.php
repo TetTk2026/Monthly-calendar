@@ -27,8 +27,38 @@ $initialMonth = date('Y-m');
     .day-number {
       font-weight: 700;
     }
-    .status-button {
-      min-width: 130px;
+    .status-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      justify-content: flex-end;
+    }
+    .status-option {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: .3rem .75rem;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #212529;
+      opacity: .65;
+      transition: all .15s ease;
+    }
+    .status-option:hover {
+      opacity: .9;
+    }
+    .status-option.is-selected {
+      opacity: 1;
+      border-color: #212529;
+      box-shadow: 0 0 0 .1rem rgba(33, 37, 41, 0.1);
+    }
+    .status-full {
+      background-color: #fdc45a;
+    }
+    .status-half {
+      background-color: #ffe680;
+    }
+    .status-off {
+      background-color: #9adbb3;
     }
   </style>
 </head>
