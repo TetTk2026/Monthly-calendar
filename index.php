@@ -19,6 +19,9 @@ $initialMonth = date('Y-m');
       align-items: center;
       gap: .75rem;
     }
+    .calendar-day.is-sunday {
+      background-color: #f5f5f5;
+    }
     .calendar-list {
       display: flex;
       flex-direction: column;

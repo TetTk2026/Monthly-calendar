@@ -147,6 +147,9 @@ function renderCalendar(monthString) {
 
     const row = document.createElement('div');
     row.className = 'calendar-day';
+    if (cellDate.getDay() === 0) {
+      row.classList.add('is-sunday');
+    }
 
     const dayName = document.createElement('div');
     dayName.className = 'day-name';
