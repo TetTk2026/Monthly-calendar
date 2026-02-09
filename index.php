@@ -74,6 +74,37 @@ $initialMonth = date('Y-m');
     .week-toggle:hover {
       color: #212529;
     }
+    .week-summary {
+      font-size: .86rem;
+      color: #6c757d;
+      padding: 0 .35rem .35rem;
+    }
+    .week-summary-poem {
+      font-size: .8rem;
+      color: #86929d;
+      font-style: italic;
+      margin-top: .12rem;
+    }
+    .month-overview-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      border: 1px solid #dbe5df;
+      border-radius: 999px;
+      background: #f7fbf7;
+      padding: .35rem .6rem;
+      margin-bottom: .75rem;
+    }
+    .month-overview-pill {
+      font-size: .82rem;
+      color: #495057;
+    }
+    .month-empty-hint {
+      margin: .35rem 0 .15rem;
+      color: #86929d;
+      font-style: italic;
+      font-size: .9rem;
+    }
     .week-rows {
       display: flex;
       flex-direction: column;
@@ -212,6 +243,8 @@ $initialMonth = date('Y-m');
 
     <div class="card shadow-sm">
       <div class="card-body">
+        <div id="monthOverview" class="month-overview-strip"></div>
+        <div id="monthEmptyHint" class="month-empty-hint d-none"></div>
         <div class="calendar-list" id="calendarGrid"></div>
       </div>
     </div>
