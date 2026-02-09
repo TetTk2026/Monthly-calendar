@@ -22,6 +22,9 @@ $initialMonth = date('Y-m');
     .calendar-day.is-sunday {
       background-color: #f5f5f5;
     }
+    .calendar-day.is-off {
+      background-color: #9adbb3;
+    }
     .calendar-list {
       display: flex;
       flex-direction: column;
