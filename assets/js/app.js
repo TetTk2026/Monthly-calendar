@@ -7,9 +7,9 @@ const monthOverview = document.getElementById('monthOverview');
 const monthEmptyHint = document.getElementById('monthEmptyHint');
 
 const statuses = [
-  { value: 'full', label: 'Full day', className: 'status-full' },
-  { value: 'half', label: 'Half day', className: 'status-half' },
-  { value: 'off', label: 'Day off', className: 'status-off' }
+  { value: 'off', label: 'Off', className: 'status-off' },
+  { value: 'full', label: 'Full', className: 'status-full' },
+  { value: 'half', label: 'Half', className: 'status-half' }
 ];
 
 const statusCycleOrder = statuses.map((status) => status.value);
@@ -79,6 +79,10 @@ function getMonthPoeticHint(monthCounts) {
     return 'Cupid filed your month under: premium romance package.';
   }
 
+  if (monthCounts.hearts >= 6 && monthCounts.weekendDays >= 8) {
+    return 'Long weekend with your sweetheart? This is basically a rom-com calendar.';
+  }
+
   if (monthCounts.hearts >= 5 && monthCounts.weekendDays >= 6) {
     return 'Long weekends with your sweetheart: dangerously cute levels detected.';
   }
@@ -89,6 +93,10 @@ function getMonthPoeticHint(monthCounts) {
 
   if (monthCounts.weekendDays >= 6) {
     return 'Weekend mode unlocked: naps, snacks, and sweetheart attacks.';
+  }
+
+  if (monthCounts.hearts >= 1 && monthCounts.weekendDays >= 2) {
+    return 'Weekend + heart combo achieved. Certified cute schedule.';
   }
 
   return '';
@@ -381,7 +389,7 @@ function createStatusHero(currentValue) {
 
   const hint = document.createElement('div');
   hint.className = 'status-hero-hint';
-  hint.textContent = 'Click day card to cycle';
+  hint.textContent = 'CLICK DAY CARD TO CYCLE';
 
   hero.appendChild(label);
   hero.appendChild(hint);
@@ -435,6 +443,7 @@ function createNotesControl(dateString, currentValue) {
   const toggleButton = document.createElement('button');
   toggleButton.type = 'button';
   toggleButton.className = 'btn btn-sm btn-outline-secondary notes-toggle';
+  toggleButton.setAttribute('aria-label', 'Toggle notes');
 
   const notesInput = document.createElement('textarea');
   notesInput.className = 'form-control form-control-sm notes-input mt-2';
@@ -448,10 +457,18 @@ function createNotesControl(dateString, currentValue) {
     persistMap(NOTES_VISIBILITY_STORAGE_KEY, notesExpandedByDate);
   }
 
+  const setToggleMeta = () => {
+    const hasValue = notesInput.value.trim().length > 0;
+    const preview = hasValue ? notesInput.value.trim().slice(0, 70) : 'No note yet';
+    toggleButton.classList.toggle('has-note', hasValue);
+    toggleButton.title = preview;
+  };
+
   const applyExpandedState = () => {
     const expanded = Boolean(notesExpandedByDate[dateString]);
     notesInput.classList.toggle('is-collapsed', !expanded);
-    toggleButton.textContent = expanded ? 'Hide notes' : 'Show notes';
+    toggleButton.textContent = expanded ? '📝' : '🗒';
+    toggleButton.setAttribute('aria-expanded', String(expanded));
   };
 
   toggleButton.addEventListener('click', () => {
@@ -460,21 +477,21 @@ function createNotesControl(dateString, currentValue) {
     applyExpandedState();
   });
 
-  let saveTimer;
-  notesInput.addEventListener('input', () => {
-    window.clearTimeout(saveTimer);
-    saveTimer = window.setTimeout(async () => {
-      const previous = (monthEntries[dateString] && monthEntries[dateString].notes) || '';
-      try {
-        await saveNotes(dateString, notesInput.value.trim());
-        showFeedback('Saved');
-      } catch (error) {
-        notesInput.value = previous;
-        showFeedback('Could not save notes', 'danger');
-      }
-    }, 350);
+  notesInput.addEventListener('blur', async () => {
+    const previous = (monthEntries[dateString] && monthEntries[dateString].notes) || '';
+    try {
+      await saveNotes(dateString, notesInput.value.trim());
+      setToggleMeta();
+      showFeedback('Saved');
+    } catch (error) {
+      notesInput.value = previous;
+      setToggleMeta();
+      showFeedback('Could not save notes', 'danger');
+    }
   });
 
+  notesInput.addEventListener('input', setToggleMeta);
+  setToggleMeta();
   applyExpandedState();
   wrapper.appendChild(toggleButton);
   wrapper.appendChild(notesInput);
@@ -484,7 +501,7 @@ function createNotesControl(dateString, currentValue) {
 function createSundayOffLabel() {
   const label = document.createElement('div');
   label.className = 'status-hero status-off';
-  label.innerHTML = '<div class="status-hero-label">Day off</div><div class="status-hero-hint">Sunday</div>';
+  label.innerHTML = '<div class="status-hero-label">Off</div><div class="status-hero-hint">Sunday</div>';
   return label;
 }
 
