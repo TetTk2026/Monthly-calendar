@@ -358,12 +358,7 @@ function createStatusHero(currentValue) {
   const label = document.createElement('div');
   label.className = 'status-hero-label';
 
-  const hint = document.createElement('div');
-  hint.className = 'status-hero-hint';
-  hint.textContent = 'CLICK DAY CARD TO CYCLE';
-
   hero.appendChild(label);
-  hero.appendChild(hint);
   updateStatusHero(hero, currentValue);
 
   return hero;
