@@ -5,10 +5,16 @@ const calendarGrid = document.getElementById('calendarGrid');
 const feedback = document.getElementById('feedback');
 
 const statuses = [
-  { value: 'full', label: 'Full day', buttonClass: 'status-full' },
-  { value: 'half', label: 'Half day', buttonClass: 'status-half' },
-  { value: 'off', label: 'Day off', buttonClass: 'status-off' }
+  { value: 'full', label: 'Full day', className: 'status-full' },
+  { value: 'half', label: 'Half day', className: 'status-half' },
+  { value: 'off', label: 'Day off', className: 'status-off' }
 ];
+
+const statusCycleOrder = statuses.map((status) => status.value);
+const statusLabelByValue = statuses.reduce((accumulator, status) => {
+  accumulator[status.value] = status.label;
+  return accumulator;
+}, {});
 
 const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 let monthEntries = {};
@@ -222,36 +228,56 @@ function applyRowStatusClass(row, status) {
   row.classList.toggle('is-half', status === 'half');
 }
 
-function createStatusButtons(dateString, currentValue, row) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'status-options';
+function getNextStatus(currentStatus) {
+  const currentIndex = statusCycleOrder.indexOf(currentStatus);
+  if (currentIndex === -1) {
+    return statusCycleOrder[0];
+  }
 
-  statuses.forEach((status) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = `status-option ${status.buttonClass}`;
-    button.textContent = status.label;
+  return statusCycleOrder[(currentIndex + 1) % statusCycleOrder.length];
+}
 
-    if (status.value === currentValue) {
-      button.classList.add('is-selected');
-    }
+function updateStatusHero(hero, status) {
+  hero.classList.remove('status-full', 'status-half', 'status-off');
 
-    button.addEventListener('click', async () => {
-      try {
-        await saveDayStatus(dateString, status.value);
-        wrapper.querySelectorAll('.status-option').forEach((element) => element.classList.remove('is-selected'));
-        button.classList.add('is-selected');
-        applyRowStatusClass(row, status.value);
-        showFeedback('Saved');
-      } catch (error) {
-        showFeedback('Could not save entry', 'danger');
-      }
-    });
+  if (status) {
+    hero.classList.add(`status-${status}`);
+  }
 
-    wrapper.appendChild(button);
-  });
+  hero.querySelector('.status-hero-label').textContent = statusLabelByValue[status] || 'Set day status';
+}
 
-  return wrapper;
+async function cycleDayStatus(dateString, row, statusHero) {
+  const currentStatus = row.dataset.status || '';
+  const nextStatus = getNextStatus(currentStatus);
+
+  try {
+    await saveDayStatus(dateString, nextStatus);
+    row.dataset.status = nextStatus;
+    applyRowStatusClass(row, nextStatus);
+    updateStatusHero(statusHero, nextStatus);
+    showFeedback('Saved');
+  } catch (error) {
+    showFeedback('Could not save entry', 'danger');
+  }
+}
+
+function createStatusHero(currentValue) {
+  const hero = document.createElement('div');
+  hero.className = 'status-hero';
+
+  const label = document.createElement('div');
+  label.className = 'status-hero-label';
+
+  const hint = document.createElement('div');
+  hint.className = 'status-hero-hint';
+  hint.textContent = 'Click day card to cycle';
+
+  hero.appendChild(label);
+  hero.appendChild(hint);
+  updateStatusHero(hero, currentValue);
+
+  return hero;
 }
 
 function createAndreasCheckbox(dateString, currentValue) {
@@ -344,8 +370,8 @@ function createNotesControl(dateString, currentValue) {
 
 function createSundayOffLabel() {
   const label = document.createElement('div');
-  label.className = 'small text-muted fw-semibold';
-  label.textContent = '';
+  label.className = 'status-hero status-off';
+  label.innerHTML = '<div class="status-hero-label">Day off</div><div class="status-hero-hint">Sunday</div>';
   return label;
 }
 
@@ -402,12 +428,32 @@ function renderCalendar(monthString) {
     const entry = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
     const sunday = isSunday(cellDate);
     const currentStatus = sunday ? 'off' : (entry.status || '');
+    row.dataset.status = currentStatus;
     applyRowStatusClass(row, currentStatus);
     const statusControl = sunday
       ? createSundayOffLabel()
-      : createStatusButtons(dateString, currentStatus, row);
+      : createStatusHero(currentStatus);
     const andreasCheckbox = createAndreasCheckbox(dateString, entry.andreas || false);
     const notesControl = createNotesControl(dateString, entry.notes || '');
+
+    andreasCheckbox.addEventListener('click', (event) => event.stopPropagation());
+    notesControl.addEventListener('click', (event) => event.stopPropagation());
+
+    if (!sunday) {
+      row.classList.add('is-clickable-status');
+      row.setAttribute('role', 'button');
+      row.setAttribute('tabindex', '0');
+      row.setAttribute('aria-label', `Cycle status for ${dateString}`);
+      row.addEventListener('click', () => {
+        cycleDayStatus(dateString, row, statusControl);
+      });
+      row.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          cycleDayStatus(dateString, row, statusControl);
+        }
+      });
+    }
 
     row.appendChild(dayName);
     row.appendChild(dateLabel);
