@@ -80,9 +80,39 @@ function updatePastWeeksVisibility() {
   togglePastWeeksButton.setAttribute('aria-pressed', String(showPastWeeks));
 }
 
+function collapsePastWeeks() {
+  const pastWeekSections = document.querySelectorAll('.week-group.is-past-week');
+  pastWeekSections.forEach((section) => {
+    const weekStartDate = section.getAttribute('data-week-start');
+    if (weekStartDate) {
+      weekCollapsedByKey[weekStartDate] = true;
+    }
+
+    section.classList.add('is-collapsed');
+    const weekLabel = section.querySelector('.week-toggle');
+    const weekToggleIcon = section.querySelector('.week-toggle-icon');
+    if (weekLabel) {
+      weekLabel.setAttribute('aria-expanded', 'false');
+      if (weekStartDate) {
+        weekLabel.setAttribute('aria-label', `Expand week of ${new Date(`${weekStartDate}T00:00:00`).toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric'
+        })}`);
+      }
+    }
+    if (weekToggleIcon) {
+      weekToggleIcon.textContent = '▸';
+    }
+  });
+  persistMap(WEEK_COLLAPSE_STORAGE_KEY, weekCollapsedByKey);
+}
+
 if (togglePastWeeksButton) {
   togglePastWeeksButton.addEventListener('click', () => {
     showPastWeeks = !showPastWeeks;
+    if (showPastWeeks) {
+      collapsePastWeeks();
+    }
     persistBoolean(SHOW_PAST_WEEKS_STORAGE_KEY, showPastWeeks);
     updatePastWeeksVisibility();
   });
@@ -142,6 +172,7 @@ function createWeekSection(weekStartDate) {
   const weekNumber = getIsoWeekNumber(weekStartDate);
 
   section.classList.toggle('is-past-week', isPast);
+  section.setAttribute('data-week-start', weekKey);
 
   const weekHeader = document.createElement('div');
   weekHeader.className = 'week-header';
