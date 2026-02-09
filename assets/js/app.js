@@ -40,7 +40,7 @@ async function saveDayStatus(dateString, value) {
     throw new Error('Failed to save entry');
   }
 
-  const current = monthEntries[dateString] || { status: '', andreas: false };
+  const current = monthEntries[dateString] || { status: 'off', andreas: false };
   current.status = value;
 
   if (current.status === '' && !current.andreas) {
@@ -62,7 +62,7 @@ async function saveAndreas(dateString, value) {
     throw new Error('Failed to save Andreas entry');
   }
 
-  const current = monthEntries[dateString] || { status: '', andreas: false };
+  const current = monthEntries[dateString] || { status: 'off', andreas: false };
   current.andreas = value;
 
   if (current.status === '' && !current.andreas) {
@@ -73,7 +73,11 @@ async function saveAndreas(dateString, value) {
   monthEntries[dateString] = current;
 }
 
-function createStatusButtons(dateString, currentValue) {
+function applyRowStatusClass(row, status) {
+  row.classList.toggle('is-off', status === 'off');
+}
+
+function createStatusButtons(dateString, currentValue, row) {
   const wrapper = document.createElement('div');
   wrapper.className = 'status-options';
 
@@ -92,6 +96,7 @@ function createStatusButtons(dateString, currentValue) {
         await saveDayStatus(dateString, status.value);
         wrapper.querySelectorAll('.status-option').forEach((element) => element.classList.remove('is-selected'));
         button.classList.add('is-selected');
+        applyRowStatusClass(row, status.value);
         showFeedback('Saved');
       } catch (error) {
         showFeedback('Could not save entry', 'danger');
@@ -170,12 +175,13 @@ function renderCalendar(monthString) {
     dateLabel.className = 'day-number';
     dateLabel.textContent = String(day);
 
-    const entry = monthEntries[dateString] || { status: '', andreas: false };
+    const entry = monthEntries[dateString] || { status: 'off', andreas: false };
     const sunday = isSunday(cellDate);
-    const currentStatus = sunday ? 'off' : (entry.status || '');
+    const currentStatus = entry.status || 'off';
+    applyRowStatusClass(row, currentStatus);
     const statusControl = sunday
       ? createSundayOffLabel()
-      : createStatusButtons(dateString, currentStatus);
+      : createStatusButtons(dateString, currentStatus, row);
     const andreasCheckbox = createAndreasCheckbox(dateString, entry.andreas || false);
 
     row.appendChild(dayName);
