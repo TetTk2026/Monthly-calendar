@@ -29,6 +29,12 @@ $initialMonth = date('Y-m');
     .calendar-day.is-off {
       background-color: #9adbb3;
     }
+    .calendar-day.is-full {
+      background-color: #ffe8b6;
+    }
+    .calendar-day.is-half {
+      background-color: #fff2c7;
+    }
     .calendar-day.is-week-start {
       border-left: .32rem solid #0d6efd;
     }
