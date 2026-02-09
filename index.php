@@ -85,47 +85,73 @@ $initialMonth = date('Y-m');
       width: 100%;
       text-align: left;
       border: none;
-      background: transparent;
-      padding: .3rem .35rem .5rem;
+      background: #f8fafc;
+      padding: .38rem .55rem;
+      border-radius: .45rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
       font-weight: 600;
       color: #495057;
     }
+    .week-toggle-main {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      min-width: 0;
+    }
+    .week-toggle-title {
+      white-space: nowrap;
+    }
+    .week-toggle-meta {
+      font-size: .83rem;
+      font-weight: 500;
+      color: #6b7280;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .week-summary-inline {
+      font-size: .8rem;
+      font-weight: 500;
+      color: #8a95a2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 42%;
+      text-align: right;
+    }
     .week-toggle:hover {
       color: #212529;
-    }
-    .week-summary {
-      font-size: .86rem;
-      color: #6c757d;
-      padding: 0 .35rem .35rem;
-    }
-    .week-summary.is-empty {
-      display: none;
-    }
-    .week-summary-poem {
-      font-size: .8rem;
-      color: #86929d;
-      font-style: italic;
-      margin-top: .12rem;
     }
     .month-overview-strip {
       display: flex;
       flex-wrap: wrap;
       gap: .5rem;
-      border: 1px solid #dbe5df;
+      border: 1px solid #d9e5f6;
       border-radius: 999px;
-      background: #f7fbf7;
-      padding: .35rem .6rem;
+      background: #f8fbff;
+      padding: .25rem .6rem;
       margin-bottom: .75rem;
     }
     .month-overview-pill {
-      font-size: .82rem;
-      color: #495057;
-    }
-    .month-empty-hint {
-      margin: .35rem 0 .15rem;
-      color: #86929d;
-      font-style: italic;
       font-size: .9rem;
+      color: #374151;
+      letter-spacing: .01em;
+    }
+    .month-legend {
+      display: inline-flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: .85rem;
+      font-size: .84rem;
+      color: #5f6b76;
+    }
+    .month-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
     }
     .week-rows {
       display: flex;
@@ -359,7 +385,11 @@ $initialMonth = date('Y-m');
     <div class="card shadow-sm">
       <div class="card-body">
         <div id="monthOverview" class="month-overview-strip"></div>
-        <div id="monthEmptyHint" class="month-empty-hint d-none"></div>
+        <div class="month-legend" aria-label="Status legend">
+          <span class="month-legend-item">⬛ full day</span>
+          <span class="month-legend-item">◐ half day</span>
+          <span class="month-legend-item">🛌 off</span>
+        </div>
         <div class="calendar-list" id="calendarGrid"></div>
       </div>
     </div>
