@@ -15,7 +15,7 @@ $initialMonth = date('Y-m');
       padding: .75rem 1rem;
       background-color: #fff;
       display: grid;
-      grid-template-columns: 52px 1fr auto;
+      grid-template-columns: 52px 1fr auto auto;
       align-items: center;
       gap: .75rem;
     }
