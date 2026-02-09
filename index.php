@@ -164,6 +164,9 @@ $initialMonth = date('Y-m');
     .week-group.is-past-week .week-rows {
       gap: 0;
     }
+    .hide-past-weeks .week-group.is-past-week .week-rows {
+      display: none;
+    }
     .month-overview-strip {
       display: flex;
       flex-wrap: wrap;
@@ -174,15 +177,14 @@ $initialMonth = date('Y-m');
       padding: .35rem .6rem;
       margin-bottom: .75rem;
     }
+    .past-weeks-toggle {
+      font-size: .78rem;
+      padding: .15rem .45rem;
+      line-height: 1.2;
+    }
     .month-overview-pill {
       font-size: .82rem;
       color: #495057;
-    }
-    .month-empty-hint {
-      margin: .35rem 0 .15rem;
-      color: #86929d;
-      font-style: italic;
-      font-size: .9rem;
     }
     .week-rows {
       display: flex;
@@ -236,16 +238,18 @@ $initialMonth = date('Y-m');
       transition: color .2s ease;
     }
     .status-hero-label {
-      font-size: .95rem;
-      font-weight: 650;
+      font-size: .78rem;
+      font-weight: 600;
       line-height: 1.1;
       display: inline-flex;
       align-items: center;
       gap: .35rem;
       color: #1f2937;
+      text-transform: uppercase;
+      letter-spacing: .02em;
     }
     .status-shape {
-      font-size: .92rem;
+      font-size: 1.35rem;
       color: var(--accent);
       line-height: 1;
     }
@@ -392,8 +396,10 @@ $initialMonth = date('Y-m');
 
     <div id="feedback" class="alert d-none" role="alert"></div>
 
-    <div id="monthOverview" class="month-overview-strip"></div>
-    <div id="monthEmptyHint" class="month-empty-hint d-none"></div>
+    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+      <div id="monthOverview" class="month-overview-strip mb-0"></div>
+      <button type="button" id="togglePastWeeks" class="btn btn-outline-secondary past-weeks-toggle">Show past weeks</button>
+    </div>
     <div class="calendar-list" id="calendarGrid"></div>
   </div>
 

@@ -4,7 +4,7 @@ const nextMonthButton = document.getElementById('nextMonth');
 const calendarGrid = document.getElementById('calendarGrid');
 const feedback = document.getElementById('feedback');
 const monthOverview = document.getElementById('monthOverview');
-const monthEmptyHint = document.getElementById('monthEmptyHint');
+const togglePastWeeksButton = document.getElementById('togglePastWeeks');
 
 const statuses = [
   { value: 'off', label: 'Off', className: 'status-off' },
@@ -25,6 +25,7 @@ const weekCollapsedByKey = {};
 
 const NOTES_VISIBILITY_STORAGE_KEY = 'calendarNotesVisibility';
 const WEEK_COLLAPSE_STORAGE_KEY = 'calendarWeekCollapsed';
+const SHOW_PAST_WEEKS_STORAGE_KEY = 'calendarShowPastWeeks';
 
 function loadStoredMap(key) {
   try {
@@ -43,34 +44,51 @@ function persistMap(key, value) {
   }
 }
 
+function loadStoredBoolean(key, fallbackValue) {
+  try {
+    const rawValue = window.localStorage.getItem(key);
+    if (rawValue === null) {
+      return fallbackValue;
+    }
+
+    return JSON.parse(rawValue) === true;
+  } catch (error) {
+    return fallbackValue;
+  }
+}
+
+function persistBoolean(key, value) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(Boolean(value)));
+  } catch (error) {
+    // Ignore storage write errors.
+  }
+}
+
 Object.assign(notesExpandedByDate, loadStoredMap(NOTES_VISIBILITY_STORAGE_KEY));
 Object.assign(weekCollapsedByKey, loadStoredMap(WEEK_COLLAPSE_STORAGE_KEY));
+let showPastWeeks = loadStoredBoolean(SHOW_PAST_WEEKS_STORAGE_KEY, false);
 
+function updatePastWeeksVisibility() {
+  document.body.classList.toggle('hide-past-weeks', !showPastWeeks);
 
-function getMonthPoeticHint(monthCounts) {
-  const totalPlanned = monthCounts.full + monthCounts.half + monthCounts.off;
-  if (totalPlanned === 0 && monthCounts.hearts === 0) {
-    return 'This month is still a blank page.';
+  if (!togglePastWeeksButton) {
+    return;
   }
 
-  if (monthCounts.hearts >= 5 && monthCounts.weekendDays >= 6) {
-    return 'Long weekends with your sweetheart: dangerously cute levels detected.';
-  }
-
-  if (monthCounts.hearts >= 3) {
-    return 'Heart count is rising. Your calendar is flirting back.';
-  }
-
-  if (monthCounts.weekendDays >= 6) {
-    return 'Weekend mode unlocked: naps, snacks, and sweetheart attacks.';
-  }
-
-  if (monthCounts.hearts >= 1 && monthCounts.weekendDays >= 2) {
-    return 'Weekend + heart combo achieved. Certified cute schedule.';
-  }
-
-  return '';
+  togglePastWeeksButton.textContent = showPastWeeks ? 'Collapse past weeks' : 'Show past weeks';
+  togglePastWeeksButton.setAttribute('aria-pressed', String(showPastWeeks));
 }
+
+if (togglePastWeeksButton) {
+  togglePastWeeksButton.addEventListener('click', () => {
+    showPastWeeks = !showPastWeeks;
+    persistBoolean(SHOW_PAST_WEEKS_STORAGE_KEY, showPastWeeks);
+    updatePastWeeksVisibility();
+  });
+}
+
+updatePastWeeksVisibility();
 
 function updateMonthOverview(monthCounts) {
   monthOverview.innerHTML = '';
@@ -86,9 +104,6 @@ function updateMonthOverview(monthCounts) {
     monthOverview.appendChild(pill);
   });
 
-  const hint = getMonthPoeticHint(monthCounts);
-  monthEmptyHint.textContent = hint;
-  monthEmptyHint.classList.toggle('d-none', !hint);
 }
 
 function getWeekStart(date) {
