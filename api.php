@@ -6,14 +6,14 @@ if (!file_exists($dataFile)) {
     file_put_contents($dataFile, json_encode(new stdClass(), JSON_PRETTY_PRINT));
 }
 
-function respond(int $status, array $payload): void
+function respond($status, $payload)
 {
     http_response_code($status);
     echo json_encode($payload);
     exit;
 }
 
-function normalizeStatus(mixed $status): ?string
+function normalizeStatus($status)
 {
     if (!is_string($status)) {
         return null;
@@ -37,10 +37,10 @@ function normalizeStatus(mixed $status): ?string
         'day-off' => 'off',
     ];
 
-    return $map[$normalized] ?? null;
+    return isset($map[$normalized]) ? $map[$normalized] : null;
 }
 
-function loadData(string $file): array
+function loadData($file)
 {
     $contents = file_get_contents($file);
     if ($contents === false || trim($contents) === '') {
@@ -67,10 +67,10 @@ function loadData(string $file): array
     return $clean;
 }
 
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
 
 if ($method === 'GET') {
-    $month = $_GET['month'] ?? '';
+    $month = isset($_GET['month']) ? $_GET['month'] : '';
     if (!preg_match('/^\d{4}-\d{2}$/', $month)) {
         respond(400, ['error' => 'Invalid month format. Use YYYY-MM.']);
     }
@@ -78,7 +78,7 @@ if ($method === 'GET') {
     $data = loadData($dataFile);
     $result = [];
     foreach ($data as $date => $status) {
-        if (str_starts_with($date, $month . '-')) {
+        if (strpos($date, $month . '-') === 0) {
             $result[$date] = $status;
         }
     }
@@ -93,8 +93,8 @@ if ($method === 'POST') {
         respond(400, ['error' => 'Invalid JSON payload.']);
     }
 
-    $date = $payload['date'] ?? '';
-    $status = normalizeStatus($payload['status'] ?? null);
+    $date = isset($payload['date']) ? $payload['date'] : '';
+    $status = normalizeStatus(isset($payload['status']) ? $payload['status'] : null);
 
     if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
         respond(400, ['error' => 'Invalid date format. Use YYYY-MM-DD.']);
