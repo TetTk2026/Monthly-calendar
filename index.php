@@ -399,6 +399,16 @@ $initialMonth = date('Y-m');
       </div>
     </div>
 
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+      <div class="form-check form-switch m-0">
+        <input class="form-check-input" type="checkbox" role="switch" id="hidePastWeeksToggle">
+        <label class="form-check-label" for="hidePastWeeksToggle">Hide past weeks older than</label>
+      </div>
+      <label for="pastWeeksCount" class="visually-hidden">Past weeks count</label>
+      <input type="number" id="pastWeeksCount" class="form-control form-control-sm" min="1" max="12" value="4" style="width: 4.75rem;">
+      <span class="text-muted small">weeks</span>
+    </div>
+
     <div id="feedback" class="alert d-none" role="alert"></div>
 
     <div id="monthOverview" class="month-overview-strip mb-2"></div>
