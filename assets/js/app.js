@@ -8,8 +8,8 @@ const monthEmptyHint = document.getElementById('monthEmptyHint');
 
 const statuses = [
   { value: 'off', label: 'Off', className: 'status-off' },
-  { value: 'full', label: 'Full', className: 'status-full' },
-  { value: 'half', label: 'Half', className: 'status-half' }
+  { value: 'half', label: 'Half', className: 'status-half' },
+  { value: 'full', label: 'Full', className: 'status-full' }
 ];
 
 const statusCycleOrder = statuses.map((status) => status.value);
@@ -47,36 +47,10 @@ Object.assign(notesExpandedByDate, loadStoredMap(NOTES_VISIBILITY_STORAGE_KEY));
 Object.assign(weekCollapsedByKey, loadStoredMap(WEEK_COLLAPSE_STORAGE_KEY));
 
 
-function formatCount(value, singularLabel, pluralLabel) {
-  return `${value} ${value === 1 ? singularLabel : pluralLabel}`;
-}
-
-function buildSummaryText(counts) {
-  return `${formatCount(counts.full, 'full day', 'full days')} · ${formatCount(counts.half, 'half', 'halves')} · ${counts.off} off`;
-}
-
-function getWeekPoeticHint(counts) {
-  const total = counts.full + counts.half + counts.off;
-  if (total === 0) {
-    return 'A quiet week. Anything planned?';
-  }
-  if (counts.full >= 5) {
-    return 'A steady rhythm carries this week.';
-  }
-  if (counts.off >= 2) {
-    return 'Room to breathe between the days.';
-  }
-  return 'A gentle balance across the week.';
-}
-
 function getMonthPoeticHint(monthCounts) {
   const totalPlanned = monthCounts.full + monthCounts.half + monthCounts.off;
   if (totalPlanned === 0 && monthCounts.hearts === 0) {
     return 'This month is still a blank page.';
-  }
-
-  if (monthCounts.hearts >= 6 && monthCounts.weekendDays >= 8) {
-    return 'Long weekend with your sweetheart? This is basically a rom-com calendar.';
   }
 
   if (monthCounts.hearts >= 5 && monthCounts.weekendDays >= 6) {
@@ -101,9 +75,6 @@ function getMonthPoeticHint(monthCounts) {
 function updateMonthOverview(monthCounts) {
   monthOverview.innerHTML = '';
   const items = [
-    { label: 'full days', value: monthCounts.full },
-    { label: 'half days', value: monthCounts.half },
-    { label: 'days off', value: monthCounts.off },
     { label: 'sweetheart days ♥', value: monthCounts.hearts },
     { label: 'long weekends', value: monthCounts.longWeekends }
   ];
@@ -118,10 +89,6 @@ function updateMonthOverview(monthCounts) {
   const hint = getMonthPoeticHint(monthCounts);
   monthEmptyHint.textContent = hint;
   monthEmptyHint.classList.toggle('d-none', !hint);
-}
-
-function isSunday(date) {
-  return date.getDay() === 0;
 }
 
 function getWeekStart(date) {
@@ -152,7 +119,7 @@ function isPastWeek(weekStartDate) {
   return weekStartDate.getTime() < currentWeekStart.getTime();
 }
 
-function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
+function createWeekSection(weekStartDate) {
   const section = document.createElement('section');
   section.className = 'week-group';
   const weekKey = formatDate(weekStartDate);
@@ -179,27 +146,6 @@ function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
     month: 'short',
     day: 'numeric'
   })}`;
-
-  const hidePastEmptyCounts = isPast && !hasEntries;
-
-  const weekSummaryInline = document.createElement('div');
-  weekSummaryInline.className = 'week-summary-inline';
-  weekSummaryInline.textContent = hidePastEmptyCounts ? '' : summaryText;
-
-  const weekSummary = document.createElement('div');
-  weekSummary.className = 'week-summary';
-  weekSummary.classList.toggle('is-empty', !hasEntries);
-
-  const weekSummaryText = document.createElement('div');
-  weekSummaryText.textContent = hidePastEmptyCounts ? '' : summaryText;
-
-  const weekSummaryPoem = document.createElement('div');
-  weekSummaryPoem.className = 'week-summary-poem';
-  weekSummaryPoem.textContent = poeticHint;
-  weekSummaryPoem.classList.toggle('d-none', !hasEntries);
-
-  weekSummary.appendChild(weekSummaryText);
-  weekSummary.appendChild(weekSummaryPoem);
 
   const weekRows = document.createElement('div');
   weekRows.className = 'week-rows';
@@ -229,9 +175,7 @@ function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
   syncLabel();
   weekHeader.appendChild(weekLabel);
   weekHeader.appendChild(weekMeta);
-  weekHeader.appendChild(weekSummaryInline);
   section.appendChild(weekHeader);
-  section.appendChild(weekSummary);
   section.appendChild(weekRows);
 
   return { section, weekRows };
@@ -525,13 +469,6 @@ function createNotesControl(dateString, currentValue) {
   return wrapper;
 }
 
-function createSundayOffLabel() {
-  const label = document.createElement('div');
-  label.className = 'status-hero status-off';
-  label.innerHTML = '<div class="status-hero-label">Off</div><div class="status-hero-hint">Sunday</div>';
-  return label;
-}
-
 function renderCalendar(monthString) {
   calendarGrid.innerHTML = '';
 
@@ -586,14 +523,7 @@ function renderCalendar(monthString) {
     if (!weeks.has(weekKey)) {
       const weekStartDate = getWeekStart(cellDate);
       const counts = weekStats.get(weekKey) || { full: 0, half: 0, off: 0 };
-      const summaryText = buildSummaryText(counts);
-      const hasEntries = counts.full + counts.half + counts.off > 0;
-      const weekSection = createWeekSection(
-        weekStartDate,
-        summaryText,
-        getWeekPoeticHint(counts),
-        hasEntries
-      );
+      const weekSection = createWeekSection(weekStartDate);
       weeks.set(weekKey, weekSection);
       calendarGrid.appendChild(weekSection.section);
     }
@@ -631,13 +561,10 @@ function renderCalendar(monthString) {
     }
 
     const entry = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
-    const sunday = isSunday(cellDate);
-    const currentStatus = sunday ? 'off' : (entry.status || '');
+    const currentStatus = entry.status || '';
     row.dataset.status = currentStatus;
     applyRowStatusClass(row, currentStatus);
-    const statusControl = sunday
-      ? createSundayOffLabel()
-      : createStatusHero(currentStatus);
+    const statusControl = createStatusHero(currentStatus);
     dayMain.appendChild(dayName);
     dayMain.appendChild(dateLabel);
 
@@ -651,21 +578,19 @@ function renderCalendar(monthString) {
     andreasCheckbox.addEventListener('click', (event) => event.stopPropagation());
     notesControl.addEventListener('click', (event) => event.stopPropagation());
 
-    if (!sunday) {
-      row.classList.add('is-clickable-status');
-      row.setAttribute('role', 'button');
-      row.setAttribute('tabindex', '0');
-      row.setAttribute('aria-label', `Cycle status for ${dateString}`);
-      row.addEventListener('click', () => {
+    row.classList.add('is-clickable-status');
+    row.setAttribute('role', 'button');
+    row.setAttribute('tabindex', '0');
+    row.setAttribute('aria-label', `Cycle status for ${dateString}`);
+    row.addEventListener('click', () => {
+      cycleDayStatus(dateString, row, statusControl);
+    });
+    row.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
         cycleDayStatus(dateString, row, statusControl);
-      });
-      row.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          cycleDayStatus(dateString, row, statusControl);
-        }
-      });
-    }
+      }
+    });
 
     row.appendChild(dayMain);
     row.appendChild(statusControl);
