@@ -51,7 +51,7 @@ function normalizeStatus($status)
     return isset($map[$normalized]) ? $map[$normalized] : null;
 }
 
-function normalizeAndreas($value)
+function normalizeHeart($value)
 {
     if (is_bool($value)) {
         return $value;
@@ -94,7 +94,7 @@ function normalizeEntry($entry)
 {
     $result = [
         'status' => '',
-        'andreas' => false,
+        'heart' => false,
         'notes' => '',
     ];
 
@@ -117,10 +117,11 @@ function normalizeEntry($entry)
         }
     }
 
-    if (array_key_exists('andreas', $entry)) {
-        $andreas = normalizeAndreas($entry['andreas']);
-        if ($andreas !== null) {
-            $result['andreas'] = $andreas;
+    if (array_key_exists('heart', $entry) || array_key_exists('andreas', $entry)) {
+        $heartSource = array_key_exists('heart', $entry) ? $entry['heart'] : $entry['andreas'];
+        $heart = normalizeHeart($heartSource);
+        if ($heart !== null) {
+            $result['heart'] = $heart;
         }
     }
 
@@ -157,7 +158,7 @@ function loadData($file)
         }
 
         $normalizedEntry = normalizeEntry($entry);
-        if ($normalizedEntry['status'] !== '' || $normalizedEntry['andreas'] || $normalizedEntry['notes'] !== '') {
+        if ($normalizedEntry['status'] !== '' || $normalizedEntry['heart'] || $normalizedEntry['notes'] !== '') {
             $clean[$date] = $normalizedEntry;
         }
     }
@@ -197,15 +198,16 @@ if ($method === 'POST') {
 
     $date = isset($payload['date']) ? $payload['date'] : '';
     $statusProvided = array_key_exists('status', $payload);
-    $andreasProvided = array_key_exists('andreas', $payload);
+    $heartProvided = array_key_exists('heart', $payload) || array_key_exists('andreas', $payload);
     $notesProvided = array_key_exists('notes', $payload);
 
-    if (!$statusProvided && !$andreasProvided && !$notesProvided) {
+    if (!$statusProvided && !$heartProvided && !$notesProvided) {
         respond(400, ['error' => 'No fields provided to update.']);
     }
 
     $status = $statusProvided ? normalizeStatus($payload['status']) : null;
-    $andreas = $andreasProvided ? normalizeAndreas($payload['andreas']) : null;
+    $heartValue = array_key_exists('heart', $payload) ? $payload['heart'] : (array_key_exists('andreas', $payload) ? $payload['andreas'] : null);
+    $heart = $heartProvided ? normalizeHeart($heartValue) : null;
     $notes = $notesProvided ? normalizeNotes($payload['notes']) : null;
 
     if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
@@ -214,8 +216,8 @@ if ($method === 'POST') {
     if ($statusProvided && $status === null) {
         respond(400, ['error' => 'Invalid status value.']);
     }
-    if ($andreasProvided && $andreas === null) {
-        respond(400, ['error' => 'Invalid Andreas value.']);
+    if ($heartProvided && $heart === null) {
+        respond(400, ['error' => 'Invalid heart value.']);
     }
     if ($notesProvided && $notes === null) {
         respond(400, ['error' => 'Invalid notes value.']);
@@ -226,19 +228,19 @@ if ($method === 'POST') {
         respond(500, ['error' => 'Failed to initialize data file.']);
     }
 
-    $existing = isset($data[$date]) ? normalizeEntry($data[$date]) : ['status' => '', 'andreas' => false, 'notes' => ''];
+    $existing = isset($data[$date]) ? normalizeEntry($data[$date]) : ['status' => '', 'heart' => false, 'notes' => ''];
 
     if ($statusProvided) {
         $existing['status'] = $status;
     }
-    if ($andreasProvided) {
-        $existing['andreas'] = $andreas;
+    if ($heartProvided) {
+        $existing['heart'] = $heart;
     }
     if ($notesProvided) {
         $existing['notes'] = $notes;
     }
 
-    if ($existing['status'] === '' && !$existing['andreas'] && $existing['notes'] === '') {
+    if ($existing['status'] === '' && !$existing['heart'] && $existing['notes'] === '') {
         unset($data[$date]);
     } else {
         $data[$date] = $existing;

@@ -81,30 +81,7 @@ function updatePastWeeksVisibility() {
 }
 
 function collapsePastWeeks() {
-  const pastWeekSections = document.querySelectorAll('.week-group.is-past-week');
-  pastWeekSections.forEach((section) => {
-    const weekStartDate = section.getAttribute('data-week-start');
-    if (weekStartDate) {
-      weekCollapsedByKey[weekStartDate] = true;
-    }
-
-    section.classList.add('is-collapsed');
-    const weekLabel = section.querySelector('.week-toggle');
-    const weekToggleIcon = section.querySelector('.week-toggle-icon');
-    if (weekLabel) {
-      weekLabel.setAttribute('aria-expanded', 'false');
-      if (weekStartDate) {
-        weekLabel.setAttribute('aria-label', `Expand week of ${new Date(`${weekStartDate}T00:00:00`).toLocaleDateString(undefined, {
-          month: 'short',
-          day: 'numeric'
-        })}`);
-      }
-    }
-    if (weekToggleIcon) {
-      weekToggleIcon.textContent = '▸';
-    }
-  });
-  persistMap(WEEK_COLLAPSE_STORAGE_KEY, weekCollapsedByKey);
+  // Past weeks are hidden only via the global toggle.
 }
 
 if (togglePastWeeksButton) {
@@ -177,8 +154,10 @@ function createWeekSection(weekStartDate) {
   const weekHeader = document.createElement('div');
   weekHeader.className = 'week-header';
 
-  const weekLabel = document.createElement('button');
-  weekLabel.type = 'button';
+  const weekLabel = document.createElement(isPast ? 'div' : 'button');
+  if (!isPast) {
+    weekLabel.type = 'button';
+  }
   weekLabel.className = 'week-toggle';
 
   const weekToggleIcon = document.createElement('span');
@@ -196,13 +175,22 @@ function createWeekSection(weekStartDate) {
   const weekRows = document.createElement('div');
   weekRows.className = 'week-rows';
 
-  const collapsedByDefault = weekCollapsedByKey[weekKey] !== undefined
+  const collapsedByDefault = !isPast && weekCollapsedByKey[weekKey] !== undefined
     ? Boolean(weekCollapsedByKey[weekKey])
-    : isPast;
+    : false;
   section.classList.toggle('is-collapsed', collapsedByDefault);
 
   const syncLabel = () => {
     const collapsed = section.classList.contains('is-collapsed');
+    if (isPast) {
+      weekLabel.setAttribute('aria-label', `Past week of ${weekStartDate.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric'
+      })}`);
+      weekToggleIcon.textContent = '·';
+      return;
+    }
+
     weekLabel.setAttribute('aria-expanded', String(!collapsed));
     weekLabel.setAttribute('aria-label', `${collapsed ? 'Expand' : 'Collapse'} week of ${weekStartDate.toLocaleDateString(undefined, {
       month: 'short',
@@ -211,12 +199,14 @@ function createWeekSection(weekStartDate) {
     weekToggleIcon.textContent = collapsed ? '▸' : '▾';
   };
 
-  weekLabel.addEventListener('click', () => {
-    section.classList.toggle('is-collapsed');
-    weekCollapsedByKey[weekKey] = section.classList.contains('is-collapsed');
-    persistMap(WEEK_COLLAPSE_STORAGE_KEY, weekCollapsedByKey);
-    syncLabel();
-  });
+  if (!isPast) {
+    weekLabel.addEventListener('click', () => {
+      section.classList.toggle('is-collapsed');
+      weekCollapsedByKey[weekKey] = section.classList.contains('is-collapsed');
+      persistMap(WEEK_COLLAPSE_STORAGE_KEY, weekCollapsedByKey);
+      syncLabel();
+    });
+  }
 
   syncLabel();
   weekHeader.appendChild(weekLabel);
@@ -279,10 +269,10 @@ async function saveDayStatus(dateString, value) {
     throw new Error('Failed to save entry');
   }
 
-  const current = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
+  const current = monthEntries[dateString] || { status: '', heart: false, notes: '' };
   current.status = value;
 
-  if (current.status === '' && !current.andreas && !current.notes) {
+  if (current.status === '' && !current.heart && !current.notes) {
     delete monthEntries[dateString];
     return;
   }
@@ -290,21 +280,21 @@ async function saveDayStatus(dateString, value) {
   monthEntries[dateString] = current;
 }
 
-async function saveAndreas(dateString, value) {
+async function saveHeart(dateString, value) {
   const response = await fetch('api.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ date: dateString, andreas: value })
+    body: JSON.stringify({ date: dateString, heart: value })
   });
 
   if (!response.ok) {
-    throw new Error('Failed to save Andreas entry');
+    throw new Error('Failed to save heart entry');
   }
 
-  const current = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
-  current.andreas = value;
+  const current = monthEntries[dateString] || { status: '', heart: false, notes: '' };
+  current.heart = value;
 
-  if (current.status === '' && !current.andreas && !current.notes) {
+  if (current.status === '' && !current.heart && !current.notes) {
     delete monthEntries[dateString];
     return;
   }
@@ -323,10 +313,10 @@ async function saveNotes(dateString, value) {
     throw new Error('Failed to save notes');
   }
 
-  const current = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
+  const current = monthEntries[dateString] || { status: '', heart: false, notes: '' };
   current.notes = value;
 
-  if (current.status === '' && !current.andreas && !current.notes) {
+  if (current.status === '' && !current.heart && !current.notes) {
     delete monthEntries[dateString];
     return;
   }
@@ -406,23 +396,23 @@ function createStatusHero(currentValue) {
   return hero;
 }
 
-function createAndreasCheckbox(dateString, currentValue) {
+function createHeartCheckbox(dateString, currentValue) {
   const wrapper = document.createElement('div');
   wrapper.className = 'form-check m-0';
 
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
   checkbox.className = 'form-check-input visually-hidden';
-  checkbox.id = `andreas-${dateString}`;
+  checkbox.id = `heart-${dateString}`;
   checkbox.checked = Boolean(currentValue);
 
   const label = document.createElement('label');
-  label.className = 'andreas-heart-toggle';
+  label.className = 'heart-toggle';
   label.setAttribute('for', checkbox.id);
   label.setAttribute('aria-label', 'Mark heart');
 
   const heart = document.createElement('span');
-  heart.className = 'andreas-heart';
+  heart.className = 'heart-icon';
   heart.textContent = '♥';
   label.appendChild(heart);
 
@@ -431,7 +421,7 @@ function createAndreasCheckbox(dateString, currentValue) {
     void label.offsetWidth;
     label.classList.add('heart-pop');
     try {
-      await saveAndreas(dateString, checkbox.checked);
+      await saveHeart(dateString, checkbox.checked);
       showFeedback('Saved');
     } catch (error) {
       checkbox.checked = !checkbox.checked;
@@ -521,11 +511,11 @@ function renderCalendar(monthString) {
     const cellDate = new Date(year, month - 1, day);
     const dateString = formatDate(cellDate);
     const weekKey = createWeekKey(cellDate);
-    const entry = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
+    const entry = monthEntries[dateString] || { status: '', heart: false, notes: '' };
     const currentStatus = entry.status || '';
     const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
 
-    if (entry.andreas) {
+    if (entry.heart) {
       monthCounts.hearts += 1;
     }
     if (weekend) {
@@ -596,7 +586,7 @@ function renderCalendar(monthString) {
       dateLabel.appendChild(todayChip);
     }
 
-    const entry = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
+    const entry = monthEntries[dateString] || { status: '', heart: false, notes: '' };
     const currentStatus = entry.status || '';
     row.dataset.status = currentStatus;
     applyRowStatusClass(row, currentStatus);
@@ -604,14 +594,14 @@ function renderCalendar(monthString) {
     dayMain.appendChild(dayName);
     dayMain.appendChild(dateLabel);
 
-    const andreasCheckbox = createAndreasCheckbox(dateString, entry.andreas || false);
+    const heartCheckbox = createHeartCheckbox(dateString, entry.heart || false);
     const { wrapper: notesControl, notesInput } = createNotesControl(dateString, entry.notes || '');
     const actions = document.createElement('div');
     actions.className = 'day-actions';
-    actions.appendChild(andreasCheckbox);
+    actions.appendChild(heartCheckbox);
     actions.appendChild(notesControl);
 
-    andreasCheckbox.addEventListener('click', (event) => event.stopPropagation());
+    heartCheckbox.addEventListener('click', (event) => event.stopPropagation());
     notesControl.addEventListener('click', (event) => event.stopPropagation());
     notesInput.addEventListener('click', (event) => event.stopPropagation());
     notesInput.addEventListener('keydown', (event) => event.stopPropagation());
