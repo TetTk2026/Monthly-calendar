@@ -1,6 +1,5 @@
 const monthPicker = document.getElementById('monthPicker');
 const calendarGrid = document.getElementById('calendarGrid');
-const weekdayHeader = document.getElementById('weekdayHeader');
 const feedback = document.getElementById('feedback');
 
 const statuses = [
@@ -10,7 +9,7 @@ const statuses = [
   { value: 'off', label: 'Day off' }
 ];
 
-const weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 let monthEntries = {};
 
 function showFeedback(message, type = 'success') {
@@ -27,81 +26,103 @@ function formatDate(date) {
   return `${year}-${month}-${day}`;
 }
 
-function createStatusSelect(dateString, currentValue) {
-  const select = document.createElement('select');
-  select.className = 'form-select form-select-sm mt-2';
-
-  statuses.forEach((status) => {
-    const option = document.createElement('option');
-    option.value = status.value;
-    option.textContent = status.label;
-    if (status.value === currentValue) option.selected = true;
-    select.appendChild(option);
+async function saveDayStatus(dateString, value) {
+  const response = await fetch('api.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date: dateString, status: value })
   });
 
-  select.addEventListener('change', async (event) => {
-    try {
-      const response = await fetch('api.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: dateString, status: event.target.value })
-      });
+  if (!response.ok) {
+    throw new Error('Failed to save entry');
+  }
 
-      if (!response.ok) throw new Error('Failed to save entry');
-      if (event.target.value === '') {
-        delete monthEntries[dateString];
-      } else {
-        monthEntries[dateString] = event.target.value;
-      }
-      showFeedback('Saved');
-    } catch (error) {
-      showFeedback('Could not save entry', 'danger');
-    }
-  });
-
-  return select;
+  if (value === '') {
+    delete monthEntries[dateString];
+  } else {
+    monthEntries[dateString] = value;
+  }
 }
 
-function renderWeekdayHeader() {
-  weekdayHeader.innerHTML = '';
-  weekdayNames.forEach((name) => {
-    const div = document.createElement('div');
-    div.className = 'weekday-label';
-    div.textContent = name;
-    weekdayHeader.appendChild(div);
+function createStatusDropdown(dateString, currentValue) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'dropdown';
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'btn btn-outline-secondary btn-sm dropdown-toggle status-button';
+
+  const currentStatus = statuses.find((status) => status.value === currentValue) || statuses[0];
+  button.textContent = currentStatus.label;
+
+  const menu = document.createElement('ul');
+  menu.className = 'dropdown-menu dropdown-menu-end';
+
+  button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    document.querySelectorAll('.dropdown-menu.show').forEach((openMenu) => {
+      if (openMenu !== menu) {
+        openMenu.classList.remove('show');
+      }
+    });
+    menu.classList.toggle('show');
   });
+
+  statuses.forEach((status) => {
+    const li = document.createElement('li');
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'dropdown-item';
+    if (status.value === currentValue) {
+      item.classList.add('active');
+    }
+    item.textContent = status.label;
+
+    item.addEventListener('click', async () => {
+      try {
+        await saveDayStatus(dateString, status.value);
+        button.textContent = status.label;
+        menu.querySelectorAll('.dropdown-item').forEach((element) => element.classList.remove('active'));
+        item.classList.add('active');
+        menu.classList.remove('show');
+        showFeedback('Saved');
+      } catch (error) {
+        showFeedback('Could not save entry', 'danger');
+      }
+    });
+
+    li.appendChild(item);
+    menu.appendChild(li);
+  });
+
+  wrapper.appendChild(button);
+  wrapper.appendChild(menu);
+
+  return wrapper;
 }
 
 function renderCalendar(monthString) {
   calendarGrid.innerHTML = '';
 
   const [year, month] = monthString.split('-').map(Number);
-  const firstDay = new Date(year, month - 1, 1);
   const daysInMonth = new Date(year, month, 0).getDate();
-
-  const offset = (firstDay.getDay() + 6) % 7;
-  for (let i = 0; i < offset; i += 1) {
-    const empty = document.createElement('div');
-    empty.className = 'calendar-day muted';
-    calendarGrid.appendChild(empty);
-  }
 
   for (let day = 1; day <= daysInMonth; day += 1) {
     const cellDate = new Date(year, month - 1, day);
     const dateString = formatDate(cellDate);
 
-    const card = document.createElement('div');
-    card.className = 'calendar-day';
+    const row = document.createElement('div');
+    row.className = 'calendar-day';
 
     const dateLabel = document.createElement('div');
     dateLabel.className = 'day-number';
-    dateLabel.textContent = day;
+    dateLabel.textContent = `${weekdayNames[cellDate.getDay()]} ${day}`;
 
-    const select = createStatusSelect(dateString, monthEntries[dateString] || '');
+    const dropdown = createStatusDropdown(dateString, monthEntries[dateString] || '');
 
-    card.appendChild(dateLabel);
-    card.appendChild(select);
-    calendarGrid.appendChild(card);
+    row.appendChild(dateLabel);
+    row.appendChild(dropdown);
+    calendarGrid.appendChild(row);
   }
 }
 
@@ -123,5 +144,8 @@ monthPicker.addEventListener('change', (event) => {
   loadMonth(event.target.value);
 });
 
-renderWeekdayHeader();
+document.addEventListener('click', () => {
+  document.querySelectorAll('.dropdown-menu.show').forEach((menu) => menu.classList.remove('show'));
+});
+
 loadMonth(monthPicker.value);
