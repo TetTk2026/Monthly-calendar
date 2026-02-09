@@ -220,10 +220,6 @@ function isToday(date) {
 function getHighlightedWeekRange() {
   const referenceDate = new Date();
 
-  if (referenceDate.getDay() === 0) {
-    referenceDate.setDate(referenceDate.getDate() + 1);
-  }
-
   const dayOfWeek = referenceDate.getDay();
   const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
 

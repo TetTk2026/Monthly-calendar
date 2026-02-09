@@ -304,6 +304,16 @@ $initialMonth = date('Y-m');
       font-size: 1.15rem;
       line-height: 1;
     }
+    #feedback {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1080;
+      margin: 0;
+      min-width: 120px;
+      text-align: center;
+      pointer-events: none;
+    }
     .day-actions {
       justify-self: end;
       display: flex;
