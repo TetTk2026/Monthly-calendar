@@ -3,6 +3,8 @@ const prevMonthButton = document.getElementById('prevMonth');
 const nextMonthButton = document.getElementById('nextMonth');
 const calendarGrid = document.getElementById('calendarGrid');
 const feedback = document.getElementById('feedback');
+const monthOverview = document.getElementById('monthOverview');
+const monthEmptyHint = document.getElementById('monthEmptyHint');
 
 const statuses = [
   { value: 'full', label: 'Full day', className: 'status-full' },
@@ -44,6 +46,73 @@ function persistMap(key, value) {
 Object.assign(notesExpandedByDate, loadStoredMap(NOTES_VISIBILITY_STORAGE_KEY));
 Object.assign(weekCollapsedByKey, loadStoredMap(WEEK_COLLAPSE_STORAGE_KEY));
 
+
+function formatCount(value, singularLabel, pluralLabel) {
+  return `${value} ${value === 1 ? singularLabel : pluralLabel}`;
+}
+
+function buildSummaryText(counts) {
+  return `${formatCount(counts.full, 'full day', 'full days')} · ${formatCount(counts.half, 'half', 'halves')} · ${counts.off} off`;
+}
+
+function getWeekPoeticHint(counts) {
+  const total = counts.full + counts.half + counts.off;
+  if (total === 0) {
+    return 'A quiet week. Anything planned?';
+  }
+  if (counts.full >= 5) {
+    return 'A steady rhythm carries this week.';
+  }
+  if (counts.off >= 2) {
+    return 'Room to breathe between the days.';
+  }
+  return 'A gentle balance across the week.';
+}
+
+function getMonthPoeticHint(monthCounts) {
+  if (monthCounts.full + monthCounts.half + monthCounts.off === 0) {
+    return 'This month is still a blank page.';
+  }
+
+  return '';
+}
+
+function createEmptyWeekSummary() {
+  const summary = document.createElement('div');
+  summary.className = 'week-summary';
+
+  const line = document.createElement('div');
+  line.textContent = 'No entries yet';
+
+  const poem = document.createElement('div');
+  poem.className = 'week-summary-poem';
+  poem.textContent = 'A quiet week. Anything planned?';
+
+  summary.appendChild(line);
+  summary.appendChild(poem);
+  return summary;
+}
+
+function updateMonthOverview(monthCounts) {
+  monthOverview.innerHTML = '';
+  const items = [
+    { label: 'full days', value: monthCounts.full },
+    { label: 'half days', value: monthCounts.half },
+    { label: 'days off', value: monthCounts.off }
+  ];
+
+  items.forEach((item) => {
+    const pill = document.createElement('span');
+    pill.className = 'month-overview-pill';
+    pill.textContent = `${item.value} ${item.label}`;
+    monthOverview.appendChild(pill);
+  });
+
+  const hint = getMonthPoeticHint(monthCounts);
+  monthEmptyHint.textContent = hint;
+  monthEmptyHint.classList.toggle('d-none', !hint);
+}
+
 function isSunday(date) {
   return date.getDay() === 0;
 }
@@ -67,7 +136,7 @@ function isPastWeek(weekStartDate) {
   return weekStartDate.getTime() < currentWeekStart.getTime();
 }
 
-function createWeekSection(weekStartDate) {
+function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
   const section = document.createElement('section');
   section.className = 'week-group';
   const weekKey = formatDate(weekStartDate);
@@ -79,6 +148,19 @@ function createWeekSection(weekStartDate) {
     month: 'short',
     day: 'numeric'
   })}`;
+
+  const weekSummary = document.createElement('div');
+  weekSummary.className = 'week-summary';
+
+  const weekSummaryText = document.createElement('div');
+  weekSummaryText.textContent = summaryText;
+
+  const weekSummaryPoem = document.createElement('div');
+  weekSummaryPoem.className = 'week-summary-poem';
+  weekSummaryPoem.textContent = poeticHint;
+
+  weekSummary.appendChild(weekSummaryText);
+  weekSummary.appendChild(weekSummaryPoem);
 
   const weekRows = document.createElement('div');
   weekRows.className = 'week-rows';
@@ -106,7 +188,12 @@ function createWeekSection(weekStartDate) {
 
   syncLabel();
   section.appendChild(weekLabel);
+  section.appendChild(weekSummary);
   section.appendChild(weekRows);
+
+  if (!hasEntries) {
+    weekRows.appendChild(createEmptyWeekSummary());
+  }
 
   return { section, weekRows };
 }
@@ -256,6 +343,7 @@ async function cycleDayStatus(dateString, row, statusHero) {
     row.dataset.status = nextStatus;
     applyRowStatusClass(row, nextStatus);
     updateStatusHero(statusHero, nextStatus);
+    renderCalendar(monthPicker.value);
     showFeedback('Saved');
   } catch (error) {
     showFeedback('Could not save entry', 'danger');
@@ -383,6 +471,27 @@ function renderCalendar(monthString) {
   const { weekStart, weekEnd } = getHighlightedWeekRange();
 
   const weeks = new Map();
+  const weekStats = new Map();
+  const monthCounts = { full: 0, half: 0, off: 0 };
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const cellDate = new Date(year, month - 1, day);
+    const dateString = formatDate(cellDate);
+    const weekKey = createWeekKey(cellDate);
+    const entry = monthEntries[dateString] || { status: '', andreas: false, notes: '' };
+    const currentStatus = entry.status || '';
+
+    if (!weekStats.has(weekKey)) {
+      weekStats.set(weekKey, { full: 0, half: 0, off: 0 });
+    }
+
+    if (currentStatus) {
+      weekStats.get(weekKey)[currentStatus] += 1;
+      monthCounts[currentStatus] += 1;
+    }
+  }
+
+  updateMonthOverview(monthCounts);
 
   for (let day = 1; day <= daysInMonth; day += 1) {
     const cellDate = new Date(year, month - 1, day);
@@ -391,7 +500,15 @@ function renderCalendar(monthString) {
 
     if (!weeks.has(weekKey)) {
       const weekStartDate = getWeekStart(cellDate);
-      const weekSection = createWeekSection(weekStartDate);
+      const counts = weekStats.get(weekKey) || { full: 0, half: 0, off: 0 };
+      const summaryText = buildSummaryText(counts);
+      const hasEntries = counts.full + counts.half + counts.off > 0;
+      const weekSection = createWeekSection(
+        weekStartDate,
+        summaryText,
+        getWeekPoeticHint(counts),
+        hasEntries
+      );
       weeks.set(weekKey, weekSection);
       calendarGrid.appendChild(weekSection.section);
     }
@@ -463,6 +580,7 @@ function renderCalendar(monthString) {
     weeks.get(weekKey).weekRows.appendChild(row);
   }
 }
+
 
 async function loadMonth(monthString) {
   try {
