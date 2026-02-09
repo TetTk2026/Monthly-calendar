@@ -81,17 +81,44 @@ $initialMonth = date('Y-m');
       background-color: #f8fafc;
       padding: .3rem .35rem;
     }
+    .week-header {
+      display: grid;
+      grid-template-columns: auto auto minmax(180px, 1fr);
+      align-items: center;
+      gap: .5rem;
+      padding: .1rem .35rem .35rem;
+    }
     .week-toggle {
-      width: 100%;
+      width: auto;
       text-align: left;
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
       border: none;
       background: transparent;
-      padding: .3rem .35rem .5rem;
+      padding: .15rem .2rem;
       font-weight: 600;
       color: #495057;
     }
+    .week-toggle-icon {
+      font-size: .8rem;
+      width: .7rem;
+    }
     .week-toggle:hover {
       color: #212529;
+    }
+    .week-meta {
+      font-size: .84rem;
+      color: #6c757d;
+      white-space: nowrap;
+    }
+    .week-summary-inline {
+      font-size: .82rem;
+      color: #6c757d;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      justify-self: end;
     }
     .week-summary {
       font-size: .86rem;
@@ -106,6 +133,37 @@ $initialMonth = date('Y-m');
       color: #86929d;
       font-style: italic;
       margin-top: .12rem;
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: opacity .15s ease, max-height .2s ease;
+    }
+    .week-group:hover .week-summary-poem,
+    .week-group:focus-within .week-summary-poem {
+      opacity: 1;
+      max-height: 1.25rem;
+    }
+    .week-group.is-collapsed .week-summary-poem {
+      opacity: 0;
+      max-height: 0;
+    }
+    .week-group.is-past-week {
+      padding: .15rem .3rem;
+    }
+    .week-group.is-past-week .week-header {
+      padding-bottom: .2rem;
+      grid-template-columns: auto auto minmax(120px, 1fr);
+      gap: .35rem;
+    }
+    .week-group.is-past-week .week-meta,
+    .week-group.is-past-week .week-summary-inline {
+      font-size: .78rem;
+    }
+    .week-group.is-past-week .week-summary {
+      display: none;
+    }
+    .week-group.is-past-week .week-rows {
+      gap: .45rem;
     }
     .month-overview-strip {
       display: flex;
@@ -330,6 +388,13 @@ $initialMonth = date('Y-m');
     @media (max-width: 992px) {
       .calendar-day {
         grid-template-columns: 1fr;
+      }
+      .week-header {
+        grid-template-columns: auto 1fr;
+      }
+      .week-summary-inline {
+        grid-column: 1 / -1;
+        justify-self: start;
       }
       .status-hero,
       .day-actions,

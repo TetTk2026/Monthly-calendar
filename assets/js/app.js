@@ -137,6 +137,15 @@ function getWeekStart(date) {
   return weekStart;
 }
 
+function getIsoWeekNumber(date) {
+  const target = new Date(date);
+  target.setHours(0, 0, 0, 0);
+  target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7));
+  const week1 = new Date(target.getFullYear(), 0, 4);
+  return 1 + Math.round(((target.getTime() - week1.getTime()) / 86400000
+    - 3 + ((week1.getDay() + 6) % 7)) / 7);
+}
+
 function createWeekKey(date) {
   const weekStart = getWeekStart(date);
   return formatDate(weekStart);
@@ -151,14 +160,33 @@ function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
   const section = document.createElement('section');
   section.className = 'week-group';
   const weekKey = formatDate(weekStartDate);
+  const isPast = isPastWeek(weekStartDate);
+  const weekNumber = getIsoWeekNumber(weekStartDate);
+
+  section.classList.toggle('is-past-week', isPast);
+
+  const weekHeader = document.createElement('div');
+  weekHeader.className = 'week-header';
 
   const weekLabel = document.createElement('button');
   weekLabel.type = 'button';
   weekLabel.className = 'week-toggle';
-  weekLabel.textContent = `Week of ${weekStartDate.toLocaleDateString(undefined, {
+
+  const weekToggleIcon = document.createElement('span');
+  weekToggleIcon.className = 'week-toggle-icon';
+
+  weekLabel.appendChild(weekToggleIcon);
+
+  const weekMeta = document.createElement('div');
+  weekMeta.className = 'week-meta';
+  weekMeta.textContent = `W${String(weekNumber).padStart(2, '0')} · ${weekStartDate.toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric'
   })}`;
+
+  const weekSummaryInline = document.createElement('div');
+  weekSummaryInline.className = 'week-summary-inline';
+  weekSummaryInline.textContent = summaryText;
 
   const weekSummary = document.createElement('div');
   weekSummary.className = 'week-summary';
@@ -170,6 +198,7 @@ function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
   const weekSummaryPoem = document.createElement('div');
   weekSummaryPoem.className = 'week-summary-poem';
   weekSummaryPoem.textContent = poeticHint;
+  weekSummaryPoem.classList.toggle('d-none', !hasEntries);
 
   weekSummary.appendChild(weekSummaryText);
   weekSummary.appendChild(weekSummaryPoem);
@@ -179,16 +208,17 @@ function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
 
   const collapsedByDefault = weekCollapsedByKey[weekKey] !== undefined
     ? Boolean(weekCollapsedByKey[weekKey])
-    : isPastWeek(weekStartDate);
+    : isPast;
   section.classList.toggle('is-collapsed', collapsedByDefault);
 
   const syncLabel = () => {
     const collapsed = section.classList.contains('is-collapsed');
     weekLabel.setAttribute('aria-expanded', String(!collapsed));
-    weekLabel.textContent = `${collapsed ? 'Show' : 'Hide'} week of ${weekStartDate.toLocaleDateString(undefined, {
+    weekLabel.setAttribute('aria-label', `${collapsed ? 'Expand' : 'Collapse'} week of ${weekStartDate.toLocaleDateString(undefined, {
       month: 'short',
       day: 'numeric'
-    })}`;
+    })}`);
+    weekToggleIcon.textContent = collapsed ? '▸' : '▾';
   };
 
   weekLabel.addEventListener('click', () => {
@@ -199,7 +229,10 @@ function createWeekSection(weekStartDate, summaryText, poeticHint, hasEntries) {
   });
 
   syncLabel();
-  section.appendChild(weekLabel);
+  weekHeader.appendChild(weekLabel);
+  weekHeader.appendChild(weekMeta);
+  weekHeader.appendChild(weekSummaryInline);
+  section.appendChild(weekHeader);
   section.appendChild(weekSummary);
   section.appendChild(weekRows);
 
