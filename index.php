@@ -36,6 +36,10 @@ $initialMonth = date('Y-m');
       border-color: #0d6efd;
       box-shadow: 0 0 0 .15rem rgba(13, 110, 253, .2);
     }
+    .calendar-day.is-current-week {
+      border-left-color: #20c997;
+      box-shadow: inset 0 0 0 .08rem rgba(32, 201, 151, .35);
+    }
     .calendar-list {
       display: flex;
       flex-direction: column;
