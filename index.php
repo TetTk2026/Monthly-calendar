@@ -34,31 +34,35 @@ $initialMonth = date('Y-m');
       justify-content: flex-end;
     }
     .status-option {
-      border: 1px solid transparent;
+      border: 1px solid #dee2e6;
       border-radius: 999px;
       padding: .3rem .75rem;
       font-size: .85rem;
       font-weight: 600;
       color: #212529;
-      opacity: .65;
+      background-color: #fff;
+      opacity: 1;
       transition: all .15s ease;
     }
     .status-option:hover {
-      opacity: .9;
+      border-color: #adb5bd;
     }
     .status-option.is-selected {
       opacity: 1;
       border-color: #212529;
       box-shadow: 0 0 0 .1rem rgba(33, 37, 41, 0.1);
     }
-    .status-full {
+    .status-option.is-selected.status-full {
       background-color: #fdc45a;
     }
-    .status-half {
+    .status-option.is-selected.status-half {
       background-color: #ffe680;
     }
-    .status-off {
+    .status-option.is-selected.status-off {
       background-color: #9adbb3;
+    }
+    .andreas-heart {
+      color: #dc3545;
     }
   </style>
 </head>
