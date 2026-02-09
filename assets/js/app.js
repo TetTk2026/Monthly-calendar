@@ -1,4 +1,6 @@
 const monthPicker = document.getElementById('monthPicker');
+const prevMonthButton = document.getElementById('prevMonth');
+const nextMonthButton = document.getElementById('nextMonth');
 const calendarGrid = document.getElementById('calendarGrid');
 const feedback = document.getElementById('feedback');
 
@@ -11,6 +13,30 @@ const statuses = [
 const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 let monthEntries = {};
 const notesExpandedByDate = {};
+const weekCollapsedByKey = {};
+
+const NOTES_VISIBILITY_STORAGE_KEY = 'calendarNotesVisibility';
+const WEEK_COLLAPSE_STORAGE_KEY = 'calendarWeekCollapsed';
+
+function loadStoredMap(key) {
+  try {
+    const rawValue = window.localStorage.getItem(key);
+    return rawValue ? JSON.parse(rawValue) : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function persistMap(key, value) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    // Ignore storage write errors.
+  }
+}
+
+Object.assign(notesExpandedByDate, loadStoredMap(NOTES_VISIBILITY_STORAGE_KEY));
+Object.assign(weekCollapsedByKey, loadStoredMap(WEEK_COLLAPSE_STORAGE_KEY));
 
 function isSunday(date) {
   return date.getDay() === 0;
@@ -38,6 +64,7 @@ function isPastWeek(weekStartDate) {
 function createWeekSection(weekStartDate) {
   const section = document.createElement('section');
   section.className = 'week-group';
+  const weekKey = formatDate(weekStartDate);
 
   const weekLabel = document.createElement('button');
   weekLabel.type = 'button';
@@ -50,7 +77,9 @@ function createWeekSection(weekStartDate) {
   const weekRows = document.createElement('div');
   weekRows.className = 'week-rows';
 
-  const collapsedByDefault = isPastWeek(weekStartDate);
+  const collapsedByDefault = weekCollapsedByKey[weekKey] !== undefined
+    ? Boolean(weekCollapsedByKey[weekKey])
+    : isPastWeek(weekStartDate);
   section.classList.toggle('is-collapsed', collapsedByDefault);
 
   const syncLabel = () => {
@@ -64,6 +93,8 @@ function createWeekSection(weekStartDate) {
 
   weekLabel.addEventListener('click', () => {
     section.classList.toggle('is-collapsed');
+    weekCollapsedByKey[weekKey] = section.classList.contains('is-collapsed');
+    persistMap(WEEK_COLLAPSE_STORAGE_KEY, weekCollapsedByKey);
     syncLabel();
   });
 
@@ -241,13 +272,7 @@ function createAndreasCheckbox(dateString, currentValue) {
   const heart = document.createElement('span');
   heart.className = 'andreas-heart';
   heart.textContent = '♥';
-
-  const check = document.createElement('span');
-  check.className = 'andreas-heart-check';
-  check.textContent = '✓';
-
   label.appendChild(heart);
-  label.appendChild(check);
 
   checkbox.addEventListener('change', async () => {
     try {
@@ -281,6 +306,7 @@ function createNotesControl(dateString, currentValue) {
   const hasNotes = Boolean(currentValue);
   if (notesExpandedByDate[dateString] === undefined) {
     notesExpandedByDate[dateString] = hasNotes;
+    persistMap(NOTES_VISIBILITY_STORAGE_KEY, notesExpandedByDate);
   }
 
   const applyExpandedState = () => {
@@ -291,6 +317,7 @@ function createNotesControl(dateString, currentValue) {
 
   toggleButton.addEventListener('click', () => {
     notesExpandedByDate[dateString] = !notesExpandedByDate[dateString];
+    persistMap(NOTES_VISIBILITY_STORAGE_KEY, notesExpandedByDate);
     applyExpandedState();
   });
 
@@ -407,6 +434,22 @@ async function loadMonth(monthString) {
 
 monthPicker.addEventListener('change', (event) => {
   loadMonth(event.target.value);
+});
+
+function shiftMonth(value, offset) {
+  const [year, month] = value.split('-').map(Number);
+  const shiftedDate = new Date(year, month - 1 + offset, 1);
+  return `${shiftedDate.getFullYear()}-${String(shiftedDate.getMonth() + 1).padStart(2, '0')}`;
+}
+
+prevMonthButton.addEventListener('click', () => {
+  monthPicker.value = shiftMonth(monthPicker.value, -1);
+  loadMonth(monthPicker.value);
+});
+
+nextMonthButton.addEventListener('click', () => {
+  monthPicker.value = shiftMonth(monthPicker.value, 1);
+  loadMonth(monthPicker.value);
 });
 
 loadMonth(monthPicker.value);

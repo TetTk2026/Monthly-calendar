@@ -138,12 +138,12 @@ $initialMonth = date('Y-m');
       justify-content: center;
       min-width: 2.2rem;
       height: 2.2rem;
-      border: 2px solid #dc3545;
+      border: 2px solid #adb5bd;
       border-radius: 999px;
       cursor: pointer;
       user-select: none;
       transition: all .15s ease;
-      color: #dc3545;
+      color: #6c757d;
       font-size: 1.35rem;
       line-height: 1;
     }
@@ -153,22 +153,17 @@ $initialMonth = date('Y-m');
     .andreas-heart {
       transform: translateY(-.01rem);
     }
-    .andreas-heart-check {
-      display: none;
-      font-size: .75rem;
-      margin-left: .2rem;
-      font-weight: 700;
-      transform: translateY(.01rem);
-    }
     .form-check-input:checked + .andreas-heart-toggle {
       background-color: #dc3545;
+      border-color: #dc3545;
       color: #fff;
     }
-    .form-check-input:checked + .andreas-heart-toggle .andreas-heart-check {
-      display: inline;
-    }
-    .form-check-input:not(:checked) + .andreas-heart-toggle .andreas-heart-check {
-      display: none;
+    .month-nav-btn {
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      font-size: 1.15rem;
+      line-height: 1;
     }
     .form-check {
       justify-self: end;
@@ -201,7 +196,9 @@ $initialMonth = date('Y-m');
       <h1 class="h3 mb-0">Work Schedule Planner</h1>
       <div class="d-flex align-items-center gap-2">
         <label for="monthPicker" class="form-label mb-0">Month:</label>
+        <button type="button" id="prevMonth" class="btn btn-outline-secondary month-nav-btn" aria-label="Previous month">‹</button>
         <input type="month" id="monthPicker" class="form-control" value="<?= htmlspecialchars($initialMonth, ENT_QUOTES, 'UTF-8'); ?>">
+        <button type="button" id="nextMonth" class="btn btn-outline-secondary month-nav-btn" aria-label="Next month">›</button>
       </div>
     </div>
 
