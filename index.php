@@ -54,7 +54,7 @@ $initialMonth = date('Y-m');
       background-color: rgba(37, 99, 235, .06);
     }
     .calendar-day.is-current-week {
-      background-color: rgba(37, 99, 235, .08);
+      background-image: linear-gradient(rgba(37, 99, 235, .08), rgba(37, 99, 235, .08));
     }
     .status-hero.status-morph {
       animation: statusMorph .2s ease;
