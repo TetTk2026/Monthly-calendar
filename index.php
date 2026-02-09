@@ -80,13 +80,7 @@ $initialMonth = date('Y-m');
       grid-template-columns: auto auto minmax(180px, 1fr);
       align-items: center;
       gap: .4rem;
-      padding: .12rem 0 .3rem;
-      border-bottom: 1px solid #e8eef5;
-      margin-bottom: .1rem;
-      position: sticky;
-      top: 0;
-      background: linear-gradient(180deg, #ffffff 80%, rgba(255, 255, 255, .96));
-      z-index: 2;
+      padding: .05rem 0 .25rem;
     }
     .week-toggle {
       width: auto;
@@ -108,9 +102,8 @@ $initialMonth = date('Y-m');
       color: #212529;
     }
     .week-meta {
-      font-size: .89rem;
-      color: #495057;
-      font-weight: 700;
+      font-size: .84rem;
+      color: #6c757d;
       white-space: nowrap;
     }
     .week-summary-inline {
@@ -233,13 +226,11 @@ $initialMonth = date('Y-m');
       50% { transform: scale(1.05); }
     }
     .status-hero {
-      border: 1px solid transparent;
-      border-radius: .5rem;
-      padding: .25rem .35rem;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
       background: transparent;
-      transition: color .2s ease, border-color .2s ease, background-color .2s ease;
-      justify-self: start;
-      text-align: left;
+      transition: color .2s ease;
     }
     .status-hero-label {
       font-size: .72rem;
@@ -263,24 +254,16 @@ $initialMonth = date('Y-m');
     .is-clickable-status {
       cursor: pointer;
     }
-    .is-clickable-status:hover,
-    .is-clickable-status:focus-visible {
+    .is-clickable-status:hover .status-hero,
+    .is-clickable-status:focus-visible .status-hero {
       color: #0b48be;
-      border-color: rgba(37, 99, 235, .25);
-      background: rgba(37, 99, 235, .06);
-    }
-    .status-hint {
-      font-size: .66rem;
-      color: #75808b;
-      margin-top: .08rem;
-      letter-spacing: .01em;
     }
     .heart-toggle {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 2rem;
-      min-height: 2rem;
+      min-width: 1.7rem;
+      height: 1.7rem;
       border: 2px solid #adb5bd;
       border-radius: 999px;
       cursor: pointer;
@@ -340,8 +323,8 @@ $initialMonth = date('Y-m');
       justify-content: flex-end;
     }
     .notes-toggle {
-      width: 2rem;
-      height: 2rem;
+      width: 1.7rem;
+      height: 1.7rem;
       padding: 0;
       border-radius: 999px;
       position: relative;
@@ -404,30 +387,6 @@ $initialMonth = date('Y-m');
         grid-column: 2;
       }
     }
-    @media (max-width: 576px) {
-      .calendar-day {
-        grid-template-columns: 1fr;
-      }
-      .day-main,
-      .status-hero,
-      .day-actions,
-      .notes-input {
-        grid-column: 1;
-      }
-      .day-actions {
-        justify-self: start;
-        width: 100%;
-        gap: .45rem;
-        margin-top: .2rem;
-      }
-      .heart-toggle,
-      .notes-toggle {
-        width: 44px;
-        height: 44px;
-        min-width: 44px;
-        min-height: 44px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -444,12 +403,9 @@ $initialMonth = date('Y-m');
 
     <div id="feedback" class="alert d-none" role="alert"></div>
 
-    <div class="d-flex justify-content-between align-items-center gap-2 mb-2 flex-wrap">
+    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
       <div id="monthOverview" class="month-overview-strip mb-0"></div>
-      <div class="d-flex align-items-center gap-2">
-        <small id="pastWeeksSummary" class="text-secondary"></small>
-        <button type="button" id="togglePastWeeks" class="btn btn-outline-secondary past-weeks-toggle">Show past weeks</button>
-      </div>
+      <button type="button" id="togglePastWeeks" class="btn btn-outline-secondary past-weeks-toggle">Show past weeks</button>
     </div>
     <div class="calendar-list" id="calendarGrid"></div>
   </div>
