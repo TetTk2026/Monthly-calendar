@@ -191,13 +191,13 @@ $initialMonth = date('Y-m');
       line-height: 1.05;
     }
     .day-name {
-      font-size: 1.02rem;
+      font-size: .88rem;
       font-weight: 600;
       color: #5c6a78;
       letter-spacing: .01em;
     }
     .day-number {
-      font-size: 1.45rem;
+      font-size: 1.2rem;
       font-weight: 800;
       color: #1f2937;
     }
