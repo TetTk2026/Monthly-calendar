@@ -19,7 +19,7 @@ $initialMonth = date('Y-m');
       --row-hover: #f8fbff;
       --status-full: #e8f6ee;
       --status-half: #fff4d8;
-      --status-off: #eef1f7;
+      --status-off: #fbfcfe;
       --status-full-ink: #1f7a43;
       --status-half-ink: #a36400;
       --status-off-ink: #556273;
@@ -162,7 +162,7 @@ $initialMonth = date('Y-m');
     .week-group.is-past-week .week-rows {
       gap: 0;
     }
-    .hide-past-weeks .week-group.is-past-week .week-rows {
+    .hide-past-weeks .week-group.is-past-week {
       display: none;
     }
     .month-overview-strip {
@@ -199,7 +199,7 @@ $initialMonth = date('Y-m');
       line-height: 1.05;
     }
     .day-name {
-      font-size: .82rem;
+      font-size: .94rem;
       font-weight: 600;
       color: #5c6a78;
       letter-spacing: .01em;
@@ -235,6 +235,10 @@ $initialMonth = date('Y-m');
       background: transparent;
       transition: color .2s ease;
     }
+    .status-hero.status-off {
+      display: flex;
+      justify-content: center;
+    }
     .status-hero-label {
       font-size: .72rem;
       font-weight: 600;
@@ -251,10 +255,13 @@ $initialMonth = date('Y-m');
       color: var(--accent);
       line-height: 1;
     }
-    .status-hero.status-full { color: var(--status-full-ink); }
+    .status-hero.status-full { color: #000; }
     .status-hero.status-half { color: var(--status-half-ink); }
     .status-hero.status-off { color: var(--status-off-ink); }
-    .status-hero.status-full .status-shape { color: var(--status-full-ink); }
+    .status-hero.status-full .status-shape {
+      color: #000;
+      font-size: 1.05rem;
+    }
     .status-hero.status-half .status-shape { color: var(--status-half-ink); }
     .status-hero.status-off .status-shape { color: var(--status-off-ink); }
     .is-clickable-status {
