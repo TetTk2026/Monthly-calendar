@@ -162,6 +162,9 @@ $initialMonth = date('Y-m');
     .week-group.is-past-week .week-rows {
       gap: 0;
     }
+    .hide-past-weeks .week-group.is-past-week .week-rows {
+      display: none;
+    }
     .month-overview-strip {
       display: flex;
       flex-wrap: wrap;
@@ -171,6 +174,11 @@ $initialMonth = date('Y-m');
       background: #f7fbf7;
       padding: .35rem .6rem;
       margin-bottom: .75rem;
+    }
+    .past-weeks-toggle {
+      font-size: .78rem;
+      padding: .15rem .45rem;
+      line-height: 1.2;
     }
     .month-overview-pill {
       font-size: .82rem;
@@ -191,13 +199,13 @@ $initialMonth = date('Y-m');
       line-height: 1.05;
     }
     .day-name {
-      font-size: .88rem;
+      font-size: .72rem;
       font-weight: 600;
       color: #5c6a78;
       letter-spacing: .01em;
     }
     .day-number {
-      font-size: 1.2rem;
+      font-size: 1rem;
       font-weight: 800;
       color: #1f2937;
     }
@@ -401,7 +409,10 @@ $initialMonth = date('Y-m');
 
     <div id="feedback" class="alert d-none" role="alert"></div>
 
-    <div id="monthOverview" class="month-overview-strip mb-2"></div>
+    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+      <div id="monthOverview" class="month-overview-strip mb-0"></div>
+      <button type="button" id="togglePastWeeks" class="btn btn-outline-secondary past-weeks-toggle">Show past weeks</button>
+    </div>
     <div class="calendar-list" id="calendarGrid"></div>
   </div>
 
