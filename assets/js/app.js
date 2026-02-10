@@ -512,8 +512,9 @@ function renderCalendar(monthString) {
     const dateString = formatDate(cellDate);
     const weekKey = createWeekKey(cellDate);
     const entry = monthEntries[dateString] || { status: '', heart: false, notes: '' };
-    const currentStatus = entry.status || '';
-    const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
+    const sunday = cellDate.getDay() === 0;
+    const currentStatus = sunday ? 'off' : (entry.status || '');
+    const weekend = sunday || cellDate.getDay() === 6;
 
     if (entry.heart) {
       monthCounts.hearts += 1;
@@ -587,7 +588,8 @@ function renderCalendar(monthString) {
     }
 
     const entry = monthEntries[dateString] || { status: '', heart: false, notes: '' };
-    const currentStatus = entry.status || '';
+    const sunday = cellDate.getDay() === 0;
+    const currentStatus = sunday ? 'off' : (entry.status || '');
     row.dataset.status = currentStatus;
     applyRowStatusClass(row, currentStatus);
     const statusControl = createStatusHero(currentStatus);
@@ -606,19 +608,21 @@ function renderCalendar(monthString) {
     notesInput.addEventListener('click', (event) => event.stopPropagation());
     notesInput.addEventListener('keydown', (event) => event.stopPropagation());
 
-    row.classList.add('is-clickable-status');
-    row.setAttribute('role', 'button');
-    row.setAttribute('tabindex', '0');
-    row.setAttribute('aria-label', `Cycle status for ${dateString}`);
-    row.addEventListener('click', () => {
-      cycleDayStatus(dateString, row, statusControl);
-    });
-    row.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
+    if (!sunday) {
+      row.classList.add('is-clickable-status');
+      row.setAttribute('role', 'button');
+      row.setAttribute('tabindex', '0');
+      row.setAttribute('aria-label', `Cycle status for ${dateString}`);
+      row.addEventListener('click', () => {
         cycleDayStatus(dateString, row, statusControl);
-      }
-    });
+      });
+      row.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          cycleDayStatus(dateString, row, statusControl);
+        }
+      });
+    }
 
     row.appendChild(dayMain);
     row.appendChild(statusControl);
