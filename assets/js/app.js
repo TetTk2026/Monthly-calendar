@@ -470,6 +470,7 @@ function createNotesControl(dateString, currentValue) {
   const applyExpandedState = () => {
     const expanded = Boolean(notesExpandedByDate[dateString]);
     notesInput.classList.toggle('is-collapsed', !expanded);
+    toggleButton.textContent = '𝍖';
     toggleButton.setAttribute('aria-expanded', String(expanded));
   };
 

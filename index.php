@@ -19,7 +19,7 @@ $initialMonth = date('Y-m');
       --row-hover: #f8fbff;
       --status-full: #e8f6ee;
       --status-half: #fff4d8;
-      --status-off: #fbfcfe;
+      --status-off: #fdfefe;
       --status-full-ink: #1f7a43;
       --status-half-ink: #a36400;
       --status-off-ink: #556273;
@@ -234,6 +234,8 @@ $initialMonth = date('Y-m');
       padding: 0;
       background: transparent;
       transition: color .2s ease;
+      justify-self: center;
+      text-align: center;
     }
     .status-hero.status-off {
       display: flex;
@@ -245,6 +247,7 @@ $initialMonth = date('Y-m');
       line-height: 1.1;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: .28rem;
       color: #1f2937;
       text-transform: uppercase;
@@ -347,13 +350,20 @@ $initialMonth = date('Y-m');
       background: transparent;
       color: #6c757d;
       position: relative;
-      cursor: pointer;
-      transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease, color .2s ease;
+      border: 2px solid #adb5bd;
+      color: #6c757d;
+      background-color: #fff;
+      font-size: 1rem;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
     }
     .notes-toggle:hover,
     .notes-toggle:focus-visible {
       transform: translateY(-1px);
-      box-shadow: 0 0 0 .15rem rgba(13, 110, 253, .15);
+      box-shadow: 0 0 0 .15rem rgba(108, 117, 125, .2);
     }
     .notes-toggle[aria-expanded="true"],
     .notes-toggle.has-note {
@@ -425,7 +435,6 @@ $initialMonth = date('Y-m');
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
       <h1 class="h3 mb-0">Work Schedule Planner</h1>
       <div class="d-flex align-items-center gap-2">
-        <label for="monthPicker" class="form-label mb-0">Month:</label>
         <button type="button" id="prevMonth" class="btn btn-outline-secondary month-nav-btn" aria-label="Previous month">‹</button>
         <input type="month" id="monthPicker" class="form-control" value="<?= htmlspecialchars($initialMonth, ENT_QUOTES, 'UTF-8'); ?>">
         <button type="button" id="nextMonth" class="btn btn-outline-secondary month-nav-btn" aria-label="Next month">›</button>
