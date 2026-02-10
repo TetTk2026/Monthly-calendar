@@ -200,11 +200,26 @@ function createWeekSection(weekStartDate) {
   };
 
   if (!isPast) {
-    weekLabel.addEventListener('click', () => {
+    const toggleWeekCollapse = () => {
       section.classList.toggle('is-collapsed');
       weekCollapsedByKey[weekKey] = section.classList.contains('is-collapsed');
       persistMap(WEEK_COLLAPSE_STORAGE_KEY, weekCollapsedByKey);
       syncLabel();
+    };
+
+    weekLabel.addEventListener('click', toggleWeekCollapse);
+    weekMeta.addEventListener('click', toggleWeekCollapse);
+    weekMeta.setAttribute('role', 'button');
+    weekMeta.setAttribute('tabindex', '0');
+    weekMeta.setAttribute('aria-label', `Toggle week of ${weekStartDate.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric'
+    })}`);
+    weekMeta.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleWeekCollapse();
+      }
     });
   }
 

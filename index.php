@@ -108,6 +108,7 @@ $initialMonth = date('Y-m');
       font-size: .84rem;
       color: #6c757d;
       white-space: nowrap;
+      cursor: pointer;
     }
     .week-summary-inline {
       font-size: .82rem;
@@ -352,7 +353,7 @@ $initialMonth = date('Y-m');
       position: relative;
       border: 2px solid #adb5bd;
       color: #6c757d;
-      background-color: #fff;
+      background-color: transparent;
       font-size: 1rem;
       line-height: 1;
       display: inline-flex;
