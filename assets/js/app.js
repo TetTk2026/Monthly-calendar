@@ -440,8 +440,13 @@ function createNotesControl(dateString, currentValue) {
 
   const toggleButton = document.createElement('button');
   toggleButton.type = 'button';
-  toggleButton.className = 'btn btn-sm btn-outline-secondary notes-toggle';
+  toggleButton.className = 'notes-toggle';
   toggleButton.setAttribute('aria-label', 'Toggle notes');
+
+  const notesIcon = document.createElement('span');
+  notesIcon.className = 'notes-icon';
+  notesIcon.textContent = '✎';
+  toggleButton.appendChild(notesIcon);
 
   const notesInput = document.createElement('textarea');
   notesInput.className = 'form-control form-control-sm notes-input mt-2';

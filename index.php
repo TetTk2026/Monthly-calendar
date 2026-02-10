@@ -339,10 +339,16 @@ $initialMonth = date('Y-m');
       justify-content: flex-end;
     }
     .notes-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: 1.7rem;
       height: 1.7rem;
       padding: 0;
+      border: 2px solid #adb5bd;
       border-radius: 999px;
+      background: transparent;
+      color: #6c757d;
       position: relative;
       border: 2px solid #adb5bd;
       color: #6c757d;
@@ -358,6 +364,17 @@ $initialMonth = date('Y-m');
     .notes-toggle:focus-visible {
       transform: translateY(-1px);
       box-shadow: 0 0 0 .15rem rgba(108, 117, 125, .2);
+    }
+    .notes-toggle[aria-expanded="true"],
+    .notes-toggle.has-note {
+      background: #0d6efd;
+      border-color: #0d6efd;
+      color: #fff;
+    }
+    .notes-icon {
+      font-size: .94rem;
+      line-height: 1;
+      transform: translateY(-.02rem);
     }
     .notes-toggle.has-note::after {
       content: '';
