@@ -54,10 +54,10 @@ $initialMonth = date('Y-m');
       background-color: var(--status-half);
     }
     .calendar-day.is-today {
-      background-color: rgba(37, 99, 235, .06);
+      background-color: white;
     }
     .calendar-day.is-current-week {
-      background-image: linear-gradient(rgba(37, 99, 235, .03), rgba(37, 99, 235, .03));
+      background-image: none;
     }
     .status-hero.status-morph {
       animation: statusMorph .2s ease;
@@ -257,6 +257,11 @@ $initialMonth = date('Y-m');
       font-size: 1.05rem;
       color: var(--accent);
       line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1em;
+      min-width: 1em;
     }
     .status-hero.status-full { color: #000; }
     .status-hero.status-half { color: var(--status-half-ink); }
